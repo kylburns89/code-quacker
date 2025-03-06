@@ -1,6 +1,9 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { generateResponse } from '../lib/gemini';
+import { generateResponse as generateGeminiResponse } from '../lib/gemini';
+import { generateResponse as generateTogetherResponse } from '../lib/together';
 import { saveConversation, loadConversations } from '../lib/storage';
+import { useAiSettings } from './AiSettingsContext';
 
 export type Message = {
   id: string;
@@ -31,6 +34,7 @@ type ChatContextType = {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
+  const { apiProvider } = useAiSettings();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -129,7 +133,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       
       updateConversation(updatedConversation);
       
-      // Generate assistant response
+      // Generate assistant response based on selected provider
+      const generateResponse = apiProvider === 'gemini' 
+        ? generateGeminiResponse 
+        : generateTogetherResponse;
+        
       const assistantContent = await generateResponse(
         updatedMessages.map(m => ({ role: m.role, content: m.content }))
       );
