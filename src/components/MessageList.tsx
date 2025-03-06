@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Message } from '../contexts/ChatContext';
 import CodeBlock from './CodeBlock';
@@ -11,9 +10,9 @@ interface MessageListProps {
   isLoading: boolean;
 }
 
-// Function to detect code blocks in message content
+// Function to detect and format different parts of message content
 const formatMessageContent = (content: string) => {
-  // Split on markdown code blocks
+  // First handle code blocks
   const parts = content.split(/(```[\s\S]*?```)/g);
   
   return parts.map((part, index) => {
@@ -28,13 +27,91 @@ const formatMessageContent = (content: string) => {
       }
     }
     
-    // For regular text, just return with newlines converted to <br>
+    // For regular text, process markdown formatting
+    const formattedText = formatMarkdown(part);
+    
     return (
-      <p key={index} className="whitespace-pre-wrap mb-2">
-        {part}
-      </p>
+      <div key={index} className="whitespace-pre-wrap mb-2">
+        {formattedText}
+      </div>
     );
   });
+};
+
+// Helper function to handle bold, italic, and numbered/bulleted lists
+const formatMarkdown = (text: string) => {
+  // Split text into segments based on line breaks to handle lists properly
+  const lines = text.split('\n');
+  
+  return lines.map((line, lineIndex) => {
+    // Process numbered lists (e.g., "1. Item")
+    const numberedListMatch = line.match(/^(\d+)\.\s+(.+)$/);
+    if (numberedListMatch) {
+      return (
+        <div key={lineIndex} className="flex items-start space-x-2 ml-2">
+          <span className="font-bold">{numberedListMatch[1]}.</span>
+          <span>{formatInlineMarkdown(numberedListMatch[2])}</span>
+        </div>
+      );
+    }
+    
+    // Process bullet points (e.g., "* Item" or "- Item")
+    const bulletListMatch = line.match(/^[\*\-]\s+(.+)$/);
+    if (bulletListMatch) {
+      return (
+        <div key={lineIndex} className="flex items-start space-x-2 ml-2">
+          <span>•</span>
+          <span>{formatInlineMarkdown(bulletListMatch[1])}</span>
+        </div>
+      );
+    }
+    
+    // If not a list item, just format inline markdown and add a line break
+    return (
+      <React.Fragment key={lineIndex}>
+        {formatInlineMarkdown(line)}
+        {lineIndex < lines.length - 1 && <br />}
+      </React.Fragment>
+    );
+  });
+};
+
+// Handle inline formatting (bold, italic)
+const formatInlineMarkdown = (text: string) => {
+  // Process bold text (**text** or __text__)
+  let formattedElements: React.ReactNode[] = [];
+  let currentText = text;
+  
+  // Handle bold formatting (**text** or __text__)
+  const boldRegex = /(\*\*|__)(.*?)\1/g;
+  let boldMatch;
+  let lastIndex = 0;
+  
+  while ((boldMatch = boldRegex.exec(currentText)) !== null) {
+    // Add text before the match
+    if (boldMatch.index > lastIndex) {
+      formattedElements.push(currentText.substring(lastIndex, boldMatch.index));
+    }
+    
+    // Add the bold text
+    formattedElements.push(
+      <strong key={`bold-${boldMatch.index}`}>{boldMatch[2]}</strong>
+    );
+    
+    lastIndex = boldMatch.index + boldMatch[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < currentText.length) {
+    formattedElements.push(currentText.substring(lastIndex));
+  }
+  
+  // If no formatting was applied, just return the original text
+  if (formattedElements.length === 0) {
+    return text;
+  }
+  
+  return <>{formattedElements}</>;
 };
 
 const MessageList: React.FC<MessageListProps> = ({ messages, isLoading }) => {
