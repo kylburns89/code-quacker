@@ -1,7 +1,7 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { hasApiKey as hasGeminiApiKey, setApiKey as setGeminiApiKey, setModelName as setGeminiModelName, getModelName as getGeminiModelName } from '../lib/gemini';
-import { hasApiKey as hasTogetherApiKey, setApiKey as setTogetherApiKey, setModelName as setTogetherModelName, getModelName as getTogetherModelName } from '../lib/together';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { hasApiKey as hasGeminiApiKey, setApiKey as setGeminiApiKey, setModelName as setGeminiModelName, getModelName as getGeminiModelName, getApiKey as getGeminiApiKeyFromStorage } from '../lib/gemini';
+import { hasApiKey as hasTogetherApiKey, setApiKey as setTogetherApiKey, setModelName as setTogetherModelName, getModelName as getTogetherModelName, getApiKey as getTogetherApiKeyFromStorage } from '../lib/together';
 
 type ApiProvider = 'gemini' | 'together';
 
@@ -19,6 +19,7 @@ interface AiSettingsContextType {
   isSettingsDialogOpen: boolean;
   showSettingsDialog: () => void;
   hideSettingsDialog: () => void;
+  hasCurrentProviderApiKey: () => boolean;
 }
 
 const AiSettingsContext = createContext<AiSettingsContextType | undefined>(undefined);
@@ -36,6 +37,12 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
   const [togetherModelName, setTogetherModelNameState] = useState(getTogetherModelName());
   
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+
+  // Load API keys when the component mounts
+  useEffect(() => {
+    setGeminiApiKeyState(getGeminiApiKeyFromStorage() || '');
+    setTogetherApiKeyState(getTogetherApiKeyFromStorage() || '');
+  }, []);
 
   const updateGeminiApiKey = (key: string) => {
     setGeminiApiKeyState(key);
@@ -62,6 +69,10 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('ai_provider', provider);
   };
 
+  const hasCurrentProviderApiKey = () => {
+    return apiProvider === 'gemini' ? hasGeminiApiKey() : hasTogetherApiKey();
+  };
+
   const showSettingsDialog = () => setIsSettingsDialogOpen(true);
   const hideSettingsDialog = () => setIsSettingsDialogOpen(false);
 
@@ -81,6 +92,7 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
         isSettingsDialogOpen,
         showSettingsDialog,
         hideSettingsDialog,
+        hasCurrentProviderApiKey,
       }}
     >
       {children}

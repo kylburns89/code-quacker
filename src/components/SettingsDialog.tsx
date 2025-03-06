@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useAiSettings } from '../contexts/AiSettingsContext';
-import { Bot, ArrowRight } from 'lucide-react';
+import { Bot, ArrowRight, Check } from 'lucide-react';
 
 const SettingsDialog: React.FC = () => {
   const {
@@ -38,14 +38,24 @@ const SettingsDialog: React.FC = () => {
   }, [isSettingsDialogOpen, geminiApiKey, geminiModelName, togetherApiKey, togetherModelName, apiProvider]);
 
   const handleSaveSettings = () => {
-    if (activeTab === 'gemini') {
+    // Save both API keys regardless of which tab is active
+    if (localGeminiApiKey !== geminiApiKey) {
       setGeminiApiKey(localGeminiApiKey);
+    }
+    
+    if (localGeminiModelName !== geminiModelName) {
       setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-lite');
-    } else {
+    }
+    
+    if (localTogetherApiKey !== togetherApiKey) {
       setTogetherApiKey(localTogetherApiKey);
+    }
+    
+    if (localTogetherModelName !== togetherModelName) {
       setTogetherModelName(localTogetherModelName || 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free');
     }
     
+    // Set the active provider
     setApiProvider(activeTab);
     hideSettingsDialog();
   };
@@ -59,14 +69,18 @@ const SettingsDialog: React.FC = () => {
             AI Model Settings
           </DialogTitle>
           <DialogDescription>
-            Configure your preferred AI model for the rubber duck assistant.
+            Configure and switch between AI providers for your rubber duck assistant.
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={(value: 'gemini' | 'together') => setActiveTab(value)} className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'gemini' | 'together')} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="gemini">Google Gemini</TabsTrigger>
-            <TabsTrigger value="together">Together.ai</TabsTrigger>
+            <TabsTrigger value="gemini" className="flex items-center gap-1">
+              Google Gemini {apiProvider === 'gemini' && <Check className="h-3 w-3" />}
+            </TabsTrigger>
+            <TabsTrigger value="together" className="flex items-center gap-1">
+              Together.ai {apiProvider === 'together' && <Check className="h-3 w-3" />}
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="gemini" className="space-y-4 pt-4">
@@ -132,8 +146,11 @@ const SettingsDialog: React.FC = () => {
           <Button variant="outline" onClick={hideSettingsDialog}>
             Cancel
           </Button>
-          <Button onClick={handleSaveSettings} disabled={(activeTab === 'gemini' && !localGeminiApiKey.trim()) || (activeTab === 'together' && !localTogetherApiKey.trim())}>
-            Save Settings
+          <Button onClick={handleSaveSettings} disabled={
+            (activeTab === 'gemini' && !localGeminiApiKey.trim()) || 
+            (activeTab === 'together' && !localTogetherApiKey.trim())
+          }>
+            Save & Use {activeTab === 'gemini' ? 'Google Gemini' : 'Together.ai'}
           </Button>
         </div>
       </DialogContent>

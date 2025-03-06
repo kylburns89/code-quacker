@@ -3,23 +3,20 @@ import React, { useEffect } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { useChat } from '../contexts/ChatContext';
-import { hasApiKey as hasGeminiApiKey } from '../lib/gemini';
-import { hasApiKey as hasTogetherApiKey } from '../lib/together';
 import { AlertTriangle } from 'lucide-react';
 import { useAiSettings } from '../contexts/AiSettingsContext';
 import SettingsDialog from './SettingsDialog';
 
 const DuckChat: React.FC = () => {
   const { currentConversation, sendMessage, isLoading, error } = useChat();
-  const { apiProvider, showSettingsDialog } = useAiSettings();
+  const { hasCurrentProviderApiKey, showSettingsDialog } = useAiSettings();
   
   // Show settings dialog if no API key is set for the selected provider
   useEffect(() => {
-    const hasKey = apiProvider === 'gemini' ? hasGeminiApiKey() : hasTogetherApiKey();
-    if (!hasKey) {
+    if (!hasCurrentProviderApiKey()) {
       showSettingsDialog();
     }
-  }, [apiProvider, showSettingsDialog]);
+  }, [hasCurrentProviderApiKey, showSettingsDialog]);
 
   const handleSendMessage = async (content: string) => {
     await sendMessage(content);
