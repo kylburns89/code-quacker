@@ -80,7 +80,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             {EXAMPLE_PROMPTS.map((example, index) => (
               <button
                 key={index}
-                className="text-left text-sm p-2 hover:bg-accent rounded-sm transition-colors text-foreground"
+                className="text-left text-sm p-2 hover:bg-accent hover:text-accent-foreground rounded-sm transition-colors"
                 onClick={() => handleExampleClick(example)}
               >
                 {example}

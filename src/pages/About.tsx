@@ -11,7 +11,7 @@ const About: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <Duck size="lg" animate={true} className="mx-auto mb-6" />
-          <h1 className="text-4xl font-bold mb-4">About RubberDuck</h1>
+          <h1 className="text-4xl font-bold mb-4">About Code Quacker</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Your AI-powered rubber duck debugging assistant to help you solve coding problems
             through thoughtful conversation.
@@ -143,7 +143,7 @@ const About: React.FC = () => {
         
         <div className="text-center mt-12 mb-8">
           <p className="text-muted-foreground">
-            RubberDuck is an open-source project built with React, TypeScript, and TailwindCSS.
+            Code Quacker is an open-source project built with React, TypeScript, and TailwindCSS.
           </p>
         </div>
       </div>

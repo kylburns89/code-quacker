@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Link to="/" className="flex items-center space-x-2">
             <Duck size="sm" animate={false} className="w-8 h-8" />
             <span className="text-2xl font-bold tracking-tight text-foreground">
-              Rubber<span className="text-primary">Duck</span>
+              Code<span className="text-primary">Quacker</span>
             </span>
           </Link>
           
@@ -84,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Footer */}
       <footer className="w-full border-t bg-background/80 backdrop-blur-xl py-4">
         <div className="container px-4 mx-auto text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} RubberDuck Debugging Assistant</p>
+          <p>© {new Date().getFullYear()} Code Quacker Debugging Assistant</p>
         </div>
       </footer>
     </div>
