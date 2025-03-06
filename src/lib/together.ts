@@ -83,8 +83,8 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
 
   try {
     // Format the conversation history for the Together API
-    // The OpenAI SDK requires a specific format for the messages
-    const formattedMessages = messages.map(msg => {
+    // Using proper typing for OpenAI SDK compatibility
+    const formattedMessages: Array<OpenAI.Chat.ChatCompletionMessageParam> = messages.map(msg => {
       const role = msg.role === 'user' ? 'user' : 'assistant';
       return {
         role: role as OpenAI.Chat.ChatCompletionRole,
@@ -95,7 +95,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     // If this is a new conversation, add the system prompt as the first message
     if (messages.length === 0 || messages[0].content.indexOf("You are an AI rubber duck") === -1) {
       formattedMessages.unshift({
-        role: 'system' as OpenAI.Chat.ChatCompletionRole,
+        role: 'system',
         content: `You are an AI rubber duck debugging assistant. 
         When the developer explains a problem to you, respond with helpful, 
         thoughtful questions and guidance that will help them solve their own problem.
