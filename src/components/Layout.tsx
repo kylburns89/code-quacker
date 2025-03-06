@@ -3,7 +3,8 @@ import React, { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
-import { MessageSquare, Bot, Info, Github } from 'lucide-react';
+import { MessageSquare, Info, Github } from 'lucide-react';
+import Duck from './Duck';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container flex h-16 items-center justify-between px-4 mx-auto">
           <Link to="/" className="flex items-center space-x-2">
-            <Bot className="w-8 h-8 text-primary" />
+            <Duck size="sm" animate={false} className="w-8 h-8" />
             <span className="text-2xl font-bold tracking-tight text-foreground">
               Rubber<span className="text-primary">Duck</span>
             </span>
