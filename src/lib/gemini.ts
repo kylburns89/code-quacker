@@ -1,3 +1,4 @@
+
 // Integration with Google's Gemini API using the official client library
 import { GoogleGenerativeAI, GenerativeModel, ChatSession } from "@google/generative-ai";
 
@@ -22,7 +23,7 @@ export const setApiKey = (key: string) => {
   // Initialize the AI client when the key is set
   if (key) {
     genAI = new GoogleGenerativeAI(key);
-    chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
     // We'll create the chat session when needed
   }
 };
@@ -35,7 +36,7 @@ export const getApiKey = (): string => {
       // Initialize the AI client if we have a stored key
       if (!genAI) {
         genAI = new GoogleGenerativeAI(storedKey);
-        chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
       }
     }
   }
@@ -56,7 +57,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
   // Initialize if not already done
   if (!genAI) {
     genAI = new GoogleGenerativeAI(key);
-    chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
   }
 
   try {
