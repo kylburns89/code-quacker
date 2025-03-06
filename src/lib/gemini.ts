@@ -1,5 +1,5 @@
-
-// Integration with Google's Gemini API
+// Integration with Google's Gemini API using the official client library
+import { GoogleGenerativeAI, GenerativeModel, ChatSession } from "@google/generative-ai";
 
 type MessageRole = 'user' | 'assistant';
 
@@ -11,10 +11,20 @@ interface Message {
 // This is a placeholder for the Gemini API key input
 // In a production environment, this should be stored securely
 let apiKey = '';
+let genAI: GoogleGenerativeAI | null = null;
+let chatModel: GenerativeModel | null = null;
+let chatSession: ChatSession | null = null;
 
 export const setApiKey = (key: string) => {
   apiKey = key;
   localStorage.setItem('gemini_api_key', key);
+  
+  // Initialize the AI client when the key is set
+  if (key) {
+    genAI = new GoogleGenerativeAI(key);
+    chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // We'll create the chat session when needed
+  }
 };
 
 export const getApiKey = (): string => {
@@ -22,6 +32,11 @@ export const getApiKey = (): string => {
     const storedKey = localStorage.getItem('gemini_api_key');
     if (storedKey) {
       apiKey = storedKey;
+      // Initialize the AI client if we have a stored key
+      if (!genAI) {
+        genAI = new GoogleGenerativeAI(storedKey);
+        chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      }
     }
   }
   return apiKey;
@@ -31,8 +46,6 @@ export const hasApiKey = (): boolean => {
   return !!getApiKey();
 };
 
-const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-
 export const generateResponse = async (messages: Message[]): Promise<string> => {
   const key = getApiKey();
   
@@ -40,76 +53,50 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     throw new Error('Gemini API key is not set');
   }
 
-  // Create the contents array in the format expected by Gemini API
-  const formattedContents = [];
-  
-  // Add system prompt as the first user message if there are no messages yet
-  if (messages.length === 0 || messages[0].role !== 'user') {
-    formattedContents.push({
-      role: 'user',
-      parts: [{
-        text: `You are an AI rubber duck debugging assistant. 
-        When the developer explains a problem to you, respond with helpful, 
-        thoughtful questions and guidance that will help them solve their own problem.
-        Focus on being insightful rather than simply providing answers.
-        Be concise and ask clarifying questions when needed.
-        If the developer provides code, analyze it for potential issues.
-        Respond conversationally as if you're an expert developer
-        helping a colleague reason through their problem.`
-      }]
-    });
+  // Initialize if not already done
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(key);
+    chatModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
-  // Format user and assistant messages for Gemini API
-  messages.forEach(msg => {
-    formattedContents.push({
-      role: msg.role,
-      parts: [{ text: msg.content }]
-    });
-  });
-
   try {
-    const response = await fetch(`${GEMINI_ENDPOINT}?key=${key}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: formattedContents,
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
-        },
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          }
-        ]
-      }),
-    });
+    // Format the conversation history for the Gemini API
+    const history = messages.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model', // Gemini uses 'model' instead of 'assistant'
+      parts: [{ text: msg.content }],
+    }));
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Failed to generate response');
+    // If this is a new conversation, add the system prompt as the first user message
+    if (messages.length === 0 || messages[0].content.indexOf("You are an AI rubber duck") === -1) {
+      history.unshift({
+        role: 'user',
+        parts: [{
+          text: `You are an AI rubber duck debugging assistant. 
+          When the developer explains a problem to you, respond with helpful, 
+          thoughtful questions and guidance that will help them solve their own problem.
+          Focus on being insightful rather than simply providing answers.
+          Be concise and ask clarifying questions when needed.
+          If the developer provides code, analyze it for potential issues.
+          Respond conversationally as if you're an expert developer
+          helping a colleague reason through their problem.`
+        }]
+      });
     }
 
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    // Start a new chat session with the history
+    chatSession = chatModel.startChat({
+      history: history.slice(0, -1), // Exclude the last message, which we'll send separately
+    });
+
+    // Get the last message to send
+    const lastMessage = messages[messages.length - 1];
+
+    // Send the last message and get the response
+    const result = await chatSession.sendMessage(lastMessage.content);
+    const response = result.response;
+    
+    // Return the text content of the response
+    return response.text();
   } catch (error) {
     console.error('Error calling Gemini API:', error);
     throw error;
