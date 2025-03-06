@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { useChat } from '../contexts/ChatContext';
-import { hasApiKey, setApiKey } from '../lib/gemini';
+import { hasApiKey, setApiKey, setModelName, getModelName } from '../lib/gemini';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Bot, AlertTriangle } from 'lucide-react';
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 const DuckChat: React.FC = () => {
   const { currentConversation, sendMessage, isLoading, error } = useChat();
   const [apiKeyInput, setApiKeyInput] = useState('');
+  const [modelNameInput, setModelNameInput] = useState(getModelName());
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(!hasApiKey());
 
   const handleSendMessage = async (content: string) => {
@@ -20,6 +21,7 @@ const DuckChat: React.FC = () => {
 
   const handleSaveApiKey = () => {
     setApiKey(apiKeyInput);
+    setModelName(modelNameInput || 'gemini-2.0-flash-lite');
     setShowApiKeyDialog(false);
   };
 
@@ -49,11 +51,11 @@ const DuckChat: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
-              Set up Gemini API Key
+              Set up Gemini API
             </DialogTitle>
             <DialogDescription>
-              To use the rubber duck assistant, you need to provide a Google Gemini API key.
-              You can get one for free at the Google AI Studio.
+              To use the rubber duck assistant, you need to provide a Google Gemini API key
+              and optionally specify a model name.
             </DialogDescription>
           </DialogHeader>
           
@@ -67,8 +69,16 @@ const DuckChat: React.FC = () => {
                 className="w-full"
                 type="password"
               />
+              <Input
+                id="modelName"
+                placeholder="Model name (defaults to gemini-2.0-flash-lite)"
+                value={modelNameInput}
+                onChange={(e) => setModelNameInput(e.target.value)}
+                className="w-full"
+              />
               <p className="text-xs text-muted-foreground">
-                Your API key is stored locally in your browser and never sent to our servers.
+                Your API key and model settings are stored locally in your browser and never sent to our servers.
+                Invalid model names will default to gemini-2.0-flash-lite.
               </p>
             </div>
             
@@ -77,7 +87,7 @@ const DuckChat: React.FC = () => {
                 Get API Key
               </Button>
               <Button onClick={handleSaveApiKey} disabled={!apiKeyInput.trim()}>
-                Save Key
+                Save Settings
               </Button>
             </div>
           </div>

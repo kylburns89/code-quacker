@@ -15,6 +15,7 @@ let apiKey = '';
 let genAI: GoogleGenerativeAI | null = null;
 let chatModel: GenerativeModel | null = null;
 let chatSession: ChatSession | null = null;
+let modelName = 'gemini-2.0-flash-lite'; // Default model
 
 export const setApiKey = (key: string) => {
   apiKey = key;
@@ -23,9 +24,33 @@ export const setApiKey = (key: string) => {
   // Initialize the AI client when the key is set
   if (key) {
     genAI = new GoogleGenerativeAI(key);
-    chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    chatModel = genAI.getGenerativeModel({ model: getModelName() });
     // We'll create the chat session when needed
   }
+};
+
+export const setModelName = (name: string) => {
+  if (name && name.trim()) {
+    modelName = name.trim();
+    localStorage.setItem('gemini_model_name', modelName);
+    
+    // Reinitialize the model with the new name if we have an API key
+    if (genAI) {
+      chatModel = genAI.getGenerativeModel({ model: modelName });
+    }
+  }
+};
+
+export const getModelName = (): string => {
+  if (!modelName || modelName === '') {
+    const storedModel = localStorage.getItem('gemini_model_name');
+    if (storedModel) {
+      modelName = storedModel;
+    } else {
+      modelName = 'gemini-2.0-flash-lite'; // Default model
+    }
+  }
+  return modelName;
 };
 
 export const getApiKey = (): string => {
@@ -36,7 +61,7 @@ export const getApiKey = (): string => {
       // Initialize the AI client if we have a stored key
       if (!genAI) {
         genAI = new GoogleGenerativeAI(storedKey);
-        chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+        chatModel = genAI.getGenerativeModel({ model: getModelName() });
       }
     }
   }
@@ -57,7 +82,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
   // Initialize if not already done
   if (!genAI) {
     genAI = new GoogleGenerativeAI(key);
-    chatModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+    chatModel = genAI.getGenerativeModel({ model: getModelName() });
   }
 
   try {
