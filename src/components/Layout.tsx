@@ -3,8 +3,9 @@ import React, { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
-import { MessageSquare, Info, Github } from 'lucide-react';
+import { MessageSquare, Info, Github, Moon, Sun } from 'lucide-react';
 import Duck from './Duck';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
   
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -53,6 +55,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
           
           <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="rounded-full"
+            >
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
             <a 
               href="https://github.com" 
               target="_blank" 
