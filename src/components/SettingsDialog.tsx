@@ -27,7 +27,7 @@ const SettingsDialog: React.FC = () => {
   const [localGeminiModelName, setLocalGeminiModelName] = useState('');
   const [localTogetherApiKey, setLocalTogetherApiKey] = useState('');
   const [localTogetherModelName, setLocalTogetherModelName] = useState('');
-  const [activeTab, setActiveTab] = useState(apiProvider);
+  const [activeTab, setActiveTab] = useState<'gemini' | 'together'>(apiProvider);
 
   useEffect(() => {
     setLocalGeminiApiKey(geminiApiKey);
@@ -63,7 +63,7 @@ const SettingsDialog: React.FC = () => {
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(value: 'gemini' | 'together') => setActiveTab(value)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="gemini">Google Gemini</TabsTrigger>
             <TabsTrigger value="together">Together.ai</TabsTrigger>

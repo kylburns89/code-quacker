@@ -83,8 +83,9 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
 
   try {
     // Format the conversation history for the Together API
-    const formattedMessages = messages.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
+    // The OpenAI SDK requires a specific format for the messages
+    const formattedMessages: Array<{role: string, content: string}> = messages.map(msg => ({
+      role: msg.role,
       content: msg.content,
     }));
 
@@ -103,10 +104,23 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
       });
     }
 
-    // Use streaming for better UX
+    // Make sure all the messages have valid roles for the OpenAI API
+    const validMessages = formattedMessages.map(msg => {
+      // Fix potential mismatch in role values
+      if (msg.role !== 'system' && msg.role !== 'user' && msg.role !== 'assistant') {
+        if (msg.role === 'model') {
+          return { role: 'assistant', content: msg.content };
+        }
+        // Default to user if an unknown role is provided
+        return { role: 'user', content: msg.content };
+      }
+      return msg;
+    });
+
+    // Use the OpenAI SDK with the properly formatted messages
     const completion = await client.chat.completions.create({
       model: getModelName(),
-      messages: formattedMessages,
+      messages: validMessages,
     });
 
     return completion.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
