@@ -1,4 +1,3 @@
-<lov-codelov-code>
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { generateResponse } from '../lib/gemini';
 import { saveConversation, loadConversations } from '../lib/storage';
@@ -185,4 +184,3 @@ export const useChat = () => {
   }
   return context;
 };
-</lov-code>
