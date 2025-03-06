@@ -40,27 +40,33 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     throw new Error('Gemini API key is not set');
   }
 
-  // System prompt to set the assistant's behavior
-  const systemPrompt = {
-    role: 'system',
-    content: `You are an AI rubber duck debugging assistant. 
-    When the developer explains a problem to you, respond with helpful, 
-    thoughtful questions and guidance that will help them solve their own problem.
-    Focus on being insightful rather than simply providing answers.
-    Be concise and ask clarifying questions when needed.
-    If the developer provides code, analyze it for potential issues.
-    Respond conversationally as if you're an expert developer
-    helping a colleague reason through their problem.`
-  };
+  // Create the contents array in the format expected by Gemini API
+  const formattedContents = [];
+  
+  // Add system prompt as the first user message if there are no messages yet
+  if (messages.length === 0 || messages[0].role !== 'user') {
+    formattedContents.push({
+      role: 'user',
+      parts: [{
+        text: `You are an AI rubber duck debugging assistant. 
+        When the developer explains a problem to you, respond with helpful, 
+        thoughtful questions and guidance that will help them solve their own problem.
+        Focus on being insightful rather than simply providing answers.
+        Be concise and ask clarifying questions when needed.
+        If the developer provides code, analyze it for potential issues.
+        Respond conversationally as if you're an expert developer
+        helping a colleague reason through their problem.`
+      }]
+    });
+  }
 
-  // Format messages for Gemini API
-  const formattedMessages = [
-    systemPrompt,
-    ...messages.map(msg => ({
+  // Format user and assistant messages for Gemini API
+  messages.forEach(msg => {
+    formattedContents.push({
       role: msg.role,
       parts: [{ text: msg.content }]
-    }))
-  ];
+    });
+  });
 
   try {
     const response = await fetch(`${GEMINI_ENDPOINT}?key=${key}`, {
@@ -69,7 +75,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: formattedMessages,
+        contents: formattedContents,
         generationConfig: {
           temperature: 0.7,
           topK: 40,
