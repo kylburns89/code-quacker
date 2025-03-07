@@ -15,6 +15,7 @@ export const setApiKey = (key: string) => {
     client = new OpenAI({
       apiKey: key,
       baseURL: 'https://api.together.xyz/v1',
+      dangerouslyAllowBrowser: true, // Required flag for browser usage
     });
   }
 };
@@ -48,6 +49,7 @@ export const getApiKey = (): string => {
         client = new OpenAI({
           apiKey: storedKey,
           baseURL: 'https://api.together.xyz/v1',
+          dangerouslyAllowBrowser: true, // Required flag for browser usage
         });
       }
     }
@@ -78,6 +80,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     client = new OpenAI({
       apiKey: key,
       baseURL: 'https://api.together.xyz/v1',
+      dangerouslyAllowBrowser: true, // Required flag for browser usage
     });
   }
 
