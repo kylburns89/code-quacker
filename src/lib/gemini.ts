@@ -15,7 +15,7 @@ let apiKey = '';
 let genAI: GoogleGenerativeAI | null = null;
 let chatModel: GenerativeModel | null = null;
 let chatSession: ChatSession | null = null;
-let modelName = 'gemini-2.0-flash-ex'; // Updated default model to support multimodal features
+let modelName = 'gemini-2.0-flash-ex'; // Default model
 
 export const setApiKey = (key: string) => {
   apiKey = key;
@@ -23,7 +23,8 @@ export const setApiKey = (key: string) => {
   
   // Initialize the AI client when the key is set
   if (key) {
-    genAI = new GoogleGenerativeAI(key);
+    // Initialize with the v1alpha API endpoint for the newer models
+    genAI = new GoogleGenerativeAI(key, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
     chatModel = genAI.getGenerativeModel({ model: getModelName() });
     // We'll create the chat session when needed
   }
@@ -47,7 +48,7 @@ export const getModelName = (): string => {
     if (storedModel) {
       modelName = storedModel;
     } else {
-      modelName = 'gemini-2.0-flash-ex'; // Updated default model
+      modelName = 'gemini-2.0-flash-ex'; // Default model
     }
   }
   return modelName;
@@ -60,7 +61,8 @@ export const getApiKey = (): string => {
       apiKey = storedKey;
       // Initialize the AI client if we have a stored key
       if (!genAI) {
-        genAI = new GoogleGenerativeAI(storedKey);
+        // Initialize with the v1alpha API endpoint for the newer models
+        genAI = new GoogleGenerativeAI(storedKey, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
         chatModel = genAI.getGenerativeModel({ model: getModelName() });
       }
     }
@@ -81,7 +83,8 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
 
   // Initialize if not already done
   if (!genAI) {
-    genAI = new GoogleGenerativeAI(key);
+    // Initialize with the v1alpha API endpoint for the newer models
+    genAI = new GoogleGenerativeAI(key, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
     chatModel = genAI.getGenerativeModel({ model: getModelName() });
   }
 

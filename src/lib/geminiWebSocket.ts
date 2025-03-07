@@ -47,8 +47,8 @@ class GeminiWebSocketService {
   public init(options: GeminiStreamOptions): void {
     this.options = options;
     
-    // Create WebSocket connection to Gemini API
-    const wsUrl = `wss://generativelanguage.googleapis.com/v1/models/${options.model || 'gemini-2.0-flash-multimodal-live'}:streamGenerateContent?key=${options.apiKey}`;
+    // Create WebSocket connection to Gemini API using v1alpha endpoint
+    const wsUrl = `wss://generativelanguage.googleapis.com/v1alpha/models/${options.model || 'gemini-2.0-flash-multimodal-live'}:streamGenerateContent?key=${options.apiKey}`;
     this.webSocket = new WebSocket(wsUrl);
     
     // Setup WebSocket event handlers
