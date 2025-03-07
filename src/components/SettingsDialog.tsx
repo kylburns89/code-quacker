@@ -146,7 +146,7 @@ const SettingsDialog: React.FC = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Default model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
+                Default model: meta-llama/Llama-3.3-70B-Instruct-Turbo
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://api.together.xyz/settings/api-keys', '_blank')} size="sm">

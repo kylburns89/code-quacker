@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 // Store the API key and model name
 let apiKey = '';
-let modelName = 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free'; // Default model
+let modelName = 'meta-llama/Llama-3.3-70B-Instruct-Turbo'; // Default model
 let client: OpenAI | null = null;
 
 export const setApiKey = (key: string) => {
@@ -15,7 +15,6 @@ export const setApiKey = (key: string) => {
     client = new OpenAI({
       apiKey: key,
       baseURL: 'https://api.together.xyz/v1',
-      dangerouslyAllowBrowser: true, // Add this flag to allow browser usage
     });
   }
 };
@@ -33,7 +32,7 @@ export const getModelName = (): string => {
     if (storedModel) {
       modelName = storedModel;
     } else {
-      modelName = 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free';
+      modelName = 'meta-llama/Llama-3.3-70B-Instruct-Turbo';
     }
   }
   return modelName;
@@ -49,7 +48,6 @@ export const getApiKey = (): string => {
         client = new OpenAI({
           apiKey: storedKey,
           baseURL: 'https://api.together.xyz/v1',
-          dangerouslyAllowBrowser: true, // Add this flag here too
         });
       }
     }
@@ -80,7 +78,6 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     client = new OpenAI({
       apiKey: key,
       baseURL: 'https://api.together.xyz/v1',
-      dangerouslyAllowBrowser: true, // Add this flag here as well
     });
   }
 
