@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SendHorizonal, Lightbulb } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import VoiceInput from './VoiceInput';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
@@ -71,6 +72,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   };
 
+  const handleVoiceInput = (text: string) => {
+    setMessage(prev => prev + text);
+  };
+
   return (
     <div className="relative">
       {showExamples && (
@@ -111,6 +116,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
             placeholder={placeholder}
             className="flex-1 max-h-32 rounded-md border-0 bg-transparent focus-visible:ring-0 resize-none"
             rows={1}
+            disabled={isLoading}
+          />
+          
+          <VoiceInput 
+            onTextReceived={handleVoiceInput}
             disabled={isLoading}
           />
           

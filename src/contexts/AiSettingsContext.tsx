@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { hasApiKey as hasGeminiApiKey, setApiKey as setGeminiApiKey, setModelName as setGeminiModelName, getModelName as getGeminiModelName, getApiKey as getGeminiApiKeyFromStorage } from '../lib/gemini';
 import { hasApiKey as hasTogetherApiKey, setApiKey as setTogetherApiKey, setModelName as setTogetherModelName, getModelName as getTogetherModelName, getApiKey as getTogetherApiKeyFromStorage } from '../lib/together';
@@ -38,7 +37,6 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
   
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 
-  // Load API keys when the component mounts
   useEffect(() => {
     setGeminiApiKeyState(getGeminiApiKeyFromStorage() || '');
     setTogetherApiKeyState(getTogetherApiKeyFromStorage() || '');
