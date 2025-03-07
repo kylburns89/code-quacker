@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { generateResponse as generateGeminiResponse } from '../lib/gemini';
 import { generateResponse as generateTogetherResponse } from '../lib/together';
@@ -25,7 +24,7 @@ type ChatContextType = {
   conversations: Conversation[];
   isLoading: boolean;
   error: string | null;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string, options?: { updateTitle?: string }) => Promise<void>;
   startNewConversation: () => void;
   loadConversation: (id: string) => void;
   deleteConversation: (id: string) => void;
@@ -104,8 +103,22 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, options?: { updateTitle?: string }) => {
     if (!currentConversation) return;
+    
+    // If we're just updating the title, do that and return
+    if (options?.updateTitle) {
+      const updatedConversation = {
+        ...currentConversation,
+        title: options.updateTitle,
+        updatedAt: Date.now(),
+      };
+      updateConversation(updatedConversation);
+      return;
+    }
+    
+    // Otherwise, process the message as usual
+    if (!content.trim()) return;
     
     setIsLoading(true);
     setError(null);

@@ -8,7 +8,7 @@ const Index: React.FC = () => {
   return (
     <ChatProvider>
       <Layout>
-        <div className="flex flex-col max-w-4xl mx-auto">
+        <div className="flex flex-col w-full mx-auto">
           <DuckChat />
         </div>
       </Layout>
