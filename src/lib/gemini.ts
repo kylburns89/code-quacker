@@ -23,9 +23,13 @@ export const setApiKey = (key: string) => {
   
   // Initialize the AI client when the key is set
   if (key) {
-    // Initialize with the v1alpha API endpoint for the newer models
-    genAI = new GoogleGenerativeAI(key, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
-    chatModel = genAI.getGenerativeModel({ model: getModelName() });
+    // Initialize the client with the API key
+    genAI = new GoogleGenerativeAI(key);
+    chatModel = genAI.getGenerativeModel({ 
+      model: getModelName(),
+      // Use v1alpha API endpoint for the newer models
+      apiVersion: "v1alpha"
+    });
     // We'll create the chat session when needed
   }
 };
@@ -37,7 +41,11 @@ export const setModelName = (name: string) => {
     
     // Reinitialize the model with the new name if we have an API key
     if (genAI) {
-      chatModel = genAI.getGenerativeModel({ model: modelName });
+      chatModel = genAI.getGenerativeModel({ 
+        model: modelName,
+        // Use v1alpha API endpoint for the newer models
+        apiVersion: "v1alpha"
+      });
     }
   }
 };
@@ -61,9 +69,12 @@ export const getApiKey = (): string => {
       apiKey = storedKey;
       // Initialize the AI client if we have a stored key
       if (!genAI) {
-        // Initialize with the v1alpha API endpoint for the newer models
-        genAI = new GoogleGenerativeAI(storedKey, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
-        chatModel = genAI.getGenerativeModel({ model: getModelName() });
+        genAI = new GoogleGenerativeAI(storedKey);
+        chatModel = genAI.getGenerativeModel({ 
+          model: getModelName(),
+          // Use v1alpha API endpoint for the newer models
+          apiVersion: "v1alpha"
+        });
       }
     }
   }
@@ -83,9 +94,12 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
 
   // Initialize if not already done
   if (!genAI) {
-    // Initialize with the v1alpha API endpoint for the newer models
-    genAI = new GoogleGenerativeAI(key, { apiEndpoint: 'generativelanguage.googleapis.com/v1alpha' });
-    chatModel = genAI.getGenerativeModel({ model: getModelName() });
+    genAI = new GoogleGenerativeAI(key);
+    chatModel = genAI.getGenerativeModel({ 
+      model: getModelName(),
+      // Use v1alpha API endpoint for the newer models
+      apiVersion: "v1alpha"
+    });
   }
 
   try {
