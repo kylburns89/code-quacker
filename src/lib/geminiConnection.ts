@@ -41,9 +41,11 @@ export class GeminiConnection {
       this.connectionAttempts++;
       
       // Create WebSocket connection to Gemini API using v1alpha endpoint
-      const wsUrl = `wss://generativelanguage.googleapis.com/v1alpha/models/${options.model || 'gemini-2.0-flash-multimodal-live'}:streamGenerateContent?key=${options.apiKey}`;
+      // Always use multimodal-live model for WebSocket connections
+      const model = 'gemini-2.0-flash-multimodal-live';
+      const wsUrl = `wss://generativelanguage.googleapis.com/v1alpha/models/${model}:streamGenerateContent?key=${options.apiKey}`;
       
-      console.log(`Attempting WebSocket connection (attempt ${this.connectionAttempts})`);
+      console.log(`Attempting WebSocket connection (attempt ${this.connectionAttempts}) to model: ${model}`);
       this.webSocket = new WebSocket(wsUrl);
       
       // Setup WebSocket event handlers
@@ -78,6 +80,24 @@ export class GeminiConnection {
     }
     
     try {
+      // Log only relevant parts to avoid large data dumps
+      const dataCopy = { ...data };
+      
+      // Remove webcam/screenshot data for logging
+      if (dataCopy.multi_modal_live_input) {
+        if (dataCopy.multi_modal_live_input.webcam) {
+          dataCopy.multi_modal_live_input.webcam = { data: '[WEBCAM_DATA]' };
+        }
+        if (dataCopy.multi_modal_live_input.screenshot) {
+          dataCopy.multi_modal_live_input.screenshot = { data: '[SCREENSHOT_DATA]' };
+        }
+        if (dataCopy.multi_modal_live_input.audio) {
+          dataCopy.multi_modal_live_input.audio = { values: '[AUDIO_DATA]' };
+        }
+      }
+      
+      console.log('Sending WebSocket data:', JSON.stringify(dataCopy).substring(0, 200) + '...');
+      
       this.webSocket.send(JSON.stringify(data));
     } catch (error) {
       console.error('Error sending WebSocket data:', error);
@@ -131,11 +151,17 @@ export class GeminiConnection {
   private handleWSMessage(event: MessageEvent): void {
     try {
       const response: GeminiResponse = JSON.parse(event.data);
+      
+      // Log non-empty response
+      if (response.candidates && response.candidates.length > 0) {
+        console.log('WebSocket received:', JSON.stringify(response).substring(0, 200) + '...');
+      }
+      
       if (this.onMessageCallback) {
         this.onMessageCallback(response);
       }
     } catch (error) {
-      console.error('Error parsing WebSocket message:', error);
+      console.error('Error parsing WebSocket message:', error, event.data);
     }
   }
 

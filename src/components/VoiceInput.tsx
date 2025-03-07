@@ -8,6 +8,7 @@ import { useAiSettings } from '../contexts/AiSettingsContext';
 import { useChat } from '../contexts/ChatContext';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
+import MediaControls from './MediaControls';
 
 interface VoiceInputProps {
   onTextReceived: (text: string) => void;
@@ -232,8 +233,8 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center space-x-2 mr-2">
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center space-x-2">
         <Switch
           id="voice-output"
           checked={voiceOutputEnabled}
@@ -243,6 +244,8 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
           {voiceOutputEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </Label>
       </div>
+      
+      <MediaControls disabled={disabled || !isListening} />
       
       <Button
         type="button"

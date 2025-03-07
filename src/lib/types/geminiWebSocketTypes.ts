@@ -20,3 +20,14 @@ export type GeminiResponse = {
     message: string;
   };
 };
+
+export type MediaFrameData = {
+  webcamFrame: string | null;
+  screenFrame: string | null;
+};
+
+export enum MediaStreamType {
+  WEBCAM = 'webcam',
+  SCREEN = 'screen',
+  NONE = 'none'
+}

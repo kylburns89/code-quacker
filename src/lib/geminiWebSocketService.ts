@@ -1,5 +1,5 @@
 
-import { GeminiStreamOptions, GeminiResponse } from './types/geminiWebSocketTypes';
+import { GeminiStreamOptions, GeminiResponse, MediaFrameData } from './types/geminiWebSocketTypes';
 import { GeminiConnection } from './geminiConnection';
 import { GeminiAudioProcessor } from './geminiAudioProcessor';
 
@@ -9,6 +9,8 @@ export class GeminiWebSocketService {
   private options: GeminiStreamOptions = { apiKey: '' };
   private onTextCallback: ((text: string) => void) | null = null;
   private onErrorCallback: ((error: string) => void) | null = null;
+  private frameCapturingInterval: number | null = null;
+  private lastFramesData: MediaFrameData | null = null;
   
   constructor() {
     this.connection = new GeminiConnection();
@@ -55,11 +57,24 @@ export class GeminiWebSocketService {
   }
 
   /**
+   * Set the current media frames to be sent with audio
+   */
+  public setMediaFrames(framesData: MediaFrameData): void {
+    this.lastFramesData = framesData;
+  }
+
+  /**
    * Stop listening and close connections
    */
   public stopListening(): void {
     // Stop audio processing
     this.audioProcessor.stop();
+    
+    // Clear frame capturing interval
+    if (this.frameCapturingInterval !== null) {
+      window.clearInterval(this.frameCapturingInterval);
+      this.frameCapturingInterval = null;
+    }
     
     // Send end message to API
     this.sendEndRequest();
@@ -123,7 +138,7 @@ export class GeminiWebSocketService {
     // Process each audio chunk
     chunks.forEach((int16Data: Int16Array) => {
       // Create request with audio data
-      const request = {
+      const request: any = {
         multi_modal_live_input: {
           session_id: this.connection.getSessionId(),
           audio: {
@@ -132,7 +147,22 @@ export class GeminiWebSocketService {
         },
       };
       
-      // Send audio data to Gemini
+      // Add video frames if available
+      if (this.lastFramesData) {
+        if (this.lastFramesData.webcamFrame) {
+          request.multi_modal_live_input.webcam = {
+            data: this.lastFramesData.webcamFrame
+          };
+        }
+        
+        if (this.lastFramesData.screenFrame) {
+          request.multi_modal_live_input.screenshot = {
+            data: this.lastFramesData.screenFrame
+          };
+        }
+      }
+      
+      // Send data to Gemini
       this.connection.send(request);
     });
   }

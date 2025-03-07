@@ -1,6 +1,7 @@
 
 import { initMicrophoneStream, createAudioProcessor, stopMediaStream } from './audioUtils';
 import { geminiWebSocketService, GeminiStreamOptions } from './geminiWebSocket';
+import { MediaFrameData } from './types/geminiWebSocketTypes';
 
 export class TranscriptionService {
   private stream: MediaStream | null = null;
@@ -9,6 +10,20 @@ export class TranscriptionService {
   private isActive = false;
   private onTranscriptionCallback: ((text: string) => void) | null = null;
   private onErrorCallback: ((error: string) => void) | null = null;
+  private mediaFramesUpdateInterval: number | null = null;
+  private currentFrames: MediaFrameData | null = null;
+  
+  /**
+   * Set media frames for video input
+   */
+  public setMediaFrames(frames: MediaFrameData): void {
+    this.currentFrames = frames;
+    
+    // Update frames in websocket service immediately
+    if (this.isActive && frames) {
+      geminiWebSocketService.setMediaFrames(frames);
+    }
+  }
   
   /**
    * Start the transcription service
@@ -46,6 +61,9 @@ export class TranscriptionService {
         this.handleError.bind(this)
       );
       
+      // Start periodic frame updates
+      this.startMediaFramesUpdates();
+      
       this.isActive = true;
     } catch (error) {
       console.error('Failed to start transcription:', error);
@@ -56,12 +74,35 @@ export class TranscriptionService {
   }
   
   /**
+   * Start sending media frames updates to the API
+   */
+  private startMediaFramesUpdates(): void {
+    // If we already have frames, send them now
+    if (this.currentFrames) {
+      geminiWebSocketService.setMediaFrames(this.currentFrames);
+    }
+    
+    // Setup interval to continuously update frames (every 200ms)
+    this.mediaFramesUpdateInterval = window.setInterval(() => {
+      if (this.currentFrames) {
+        geminiWebSocketService.setMediaFrames(this.currentFrames);
+      }
+    }, 200);
+  }
+  
+  /**
    * Stop the transcription service
    */
   public stop(): void {
     if (!this.isActive) return;
     
     try {
+      // Stop frame updates
+      if (this.mediaFramesUpdateInterval !== null) {
+        window.clearInterval(this.mediaFramesUpdateInterval);
+        this.mediaFramesUpdateInterval = null;
+      }
+      
       // Stop WebSocket listening
       geminiWebSocketService.stopListening();
       geminiWebSocketService.closeConnection();
@@ -81,6 +122,7 @@ export class TranscriptionService {
       }
       
       this.audioProcessor = null;
+      this.currentFrames = null;
     } catch (error) {
       console.error('Error during transcription stop:', error);
     } finally {
