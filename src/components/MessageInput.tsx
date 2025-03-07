@@ -1,9 +1,11 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SendHorizonal, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import VoiceInput from './VoiceInput';
+import { useAiSettings } from '../contexts/AiSettingsContext';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
@@ -27,6 +29,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [message, setMessage] = useState<string>('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showExamples, setShowExamples] = useState(false);
+  const { isVoiceInputAvailable } = useAiSettings();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -116,10 +119,12 @@ const MessageInput: React.FC<MessageInputProps> = ({
             disabled={isLoading}
           />
           
-          <VoiceInput 
-            onTextReceived={handleVoiceInput}
-            disabled={isLoading}
-          />
+          {isVoiceInputAvailable() && (
+            <VoiceInput 
+              onTextReceived={handleVoiceInput}
+              disabled={isLoading}
+            />
+          )}
           
           <Button
             type="submit"

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { hasApiKey as hasGeminiApiKey, setApiKey as setGeminiApiKey, setModelName as setGeminiModelName, getModelName as getGeminiModelName, getApiKey as getGeminiApiKeyFromStorage } from '../lib/gemini';
 import { hasApiKey as hasTogetherApiKey, setApiKey as setTogetherApiKey, setModelName as setTogetherModelName, getModelName as getTogetherModelName, getApiKey as getTogetherApiKeyFromStorage } from '../lib/together';
@@ -19,6 +20,7 @@ interface AiSettingsContextType {
   showSettingsDialog: () => void;
   hideSettingsDialog: () => void;
   hasCurrentProviderApiKey: () => boolean;
+  isVoiceInputAvailable: () => boolean;
 }
 
 const AiSettingsContext = createContext<AiSettingsContextType | undefined>(undefined);
@@ -70,6 +72,10 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
   const hasCurrentProviderApiKey = () => {
     return apiProvider === 'gemini' ? hasGeminiApiKey() : hasTogetherApiKey();
   };
+  
+  const isVoiceInputAvailable = () => {
+    return apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-ex' && hasGeminiApiKey();
+  };
 
   const showSettingsDialog = () => setIsSettingsDialogOpen(true);
   const hideSettingsDialog = () => setIsSettingsDialogOpen(false);
@@ -91,6 +97,7 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
         showSettingsDialog,
         hideSettingsDialog,
         hasCurrentProviderApiKey,
+        isVoiceInputAvailable,
       }}
     >
       {children}

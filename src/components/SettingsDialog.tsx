@@ -5,7 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useAiSettings } from '../contexts/AiSettingsContext';
-import { Bot, ArrowRight, Check } from 'lucide-react';
+import { Bot, ArrowRight, Check, Mic } from 'lucide-react';
+import { Alert, AlertDescription } from './ui/alert';
 
 const SettingsDialog: React.FC = () => {
   const {
@@ -29,6 +30,9 @@ const SettingsDialog: React.FC = () => {
   const [localTogetherModelName, setLocalTogetherModelName] = useState('');
   const [activeTab, setActiveTab] = useState<'gemini' | 'together'>(apiProvider);
 
+  // Check if voice input would be available with current settings
+  const isVoiceAvailable = activeTab === 'gemini' && localGeminiModelName === 'gemini-2.0-flash-ex';
+
   useEffect(() => {
     setLocalGeminiApiKey(geminiApiKey);
     setLocalGeminiModelName(geminiModelName);
@@ -44,7 +48,7 @@ const SettingsDialog: React.FC = () => {
     }
     
     if (localGeminiModelName !== geminiModelName) {
-      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-lite');
+      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-ex');
     }
     
     if (localTogetherApiKey !== togetherApiKey) {
@@ -95,14 +99,24 @@ const SettingsDialog: React.FC = () => {
               />
               <Input
                 id="geminiModelName"
-                placeholder="Model name (defaults to gemini-2.0-flash-lite)"
+                placeholder="Model name (defaults to gemini-2.0-flash-ex)"
                 value={localGeminiModelName}
                 onChange={(e) => setLocalGeminiModelName(e.target.value)}
                 className="w-full"
               />
+              
+              {isVoiceAvailable && (
+                <Alert className="bg-secondary">
+                  <Mic className="h-4 w-4 mr-2" />
+                  <AlertDescription>
+                    Voice input is available with the gemini-2.0-flash-ex model.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Invalid model names will default to gemini-2.0-flash-lite.
+                Default model: gemini-2.0-flash-ex. Use this model for voice input capability.
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://ai.google.dev/tutorials/setup', '_blank')} size="sm">

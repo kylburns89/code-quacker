@@ -15,7 +15,7 @@ let apiKey = '';
 let genAI: GoogleGenerativeAI | null = null;
 let chatModel: GenerativeModel | null = null;
 let chatSession: ChatSession | null = null;
-let modelName = 'gemini-2.0-flash-lite'; // Default model
+let modelName = 'gemini-2.0-flash-ex'; // Updated default model to support multimodal features
 
 export const setApiKey = (key: string) => {
   apiKey = key;
@@ -47,7 +47,7 @@ export const getModelName = (): string => {
     if (storedModel) {
       modelName = storedModel;
     } else {
-      modelName = 'gemini-2.0-flash-lite'; // Default model
+      modelName = 'gemini-2.0-flash-ex'; // Updated default model
     }
   }
   return modelName;

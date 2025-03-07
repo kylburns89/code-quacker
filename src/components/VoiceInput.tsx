@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
@@ -15,8 +14,11 @@ interface VoiceInputProps {
 const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = false }) => {
   const [isListening, setIsListening] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const { apiProvider, geminiApiKey } = useAiSettings();
+  const { apiProvider, geminiApiKey, geminiModelName } = useAiSettings();
   const { currentConversation } = useChat();
+  
+  // Check if voice input is available based on model
+  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-ex';
   
   // Cleanup on component unmount
   useEffect(() => {
@@ -30,9 +32,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const startListening = async () => {
     if (isListening || disabled) return;
     
-    // Check if using Gemini provider
-    if (apiProvider !== 'gemini') {
-      toast.error('Voice input is only available with Gemini API');
+    // Check if using correct provider and model
+    if (!isVoiceAvailable) {
+      toast.error('Voice input requires Gemini API with gemini-2.0-flash-ex model');
       return;
     }
     
@@ -71,7 +73,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       await transcriptionService.start(
         {
           apiKey: geminiApiKey,
-          model: 'gemini-2.0-flash-multimodal-live',
+          model: 'gemini-2.0-flash-multimodal-live', // Use the multimodal live model for voice
           temperature: 0.7,
           messages: previousMessages
         },
@@ -114,6 +116,11 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       startListening();
     }
   };
+
+  // Don't render the button if voice input is not available
+  if (!isVoiceAvailable) {
+    return null;
+  }
 
   return (
     <Button
