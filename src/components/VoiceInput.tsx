@@ -8,6 +8,7 @@ import { useAiSettings } from '../contexts/AiSettingsContext';
 import { useChat } from '../contexts/ChatContext';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
+import { Progress } from './ui/progress';
 import MediaControls from './MediaControls';
 
 interface VoiceInputProps {
@@ -21,13 +22,15 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(() => {
     return localStorage.getItem('voice_output_enabled') === 'true';
   });
+  const [audioLevel, setAudioLevel] = useState(0);
   const { apiProvider, geminiApiKey, geminiModelName } = useAiSettings();
   const { currentConversation } = useChat();
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
   const errorTimeoutRef = useRef<number | null>(null);
+  const audioCheckIntervalRef = useRef<number | null>(null);
   
-  // Check if voice input is available ONLY for gemini-2.0-flash-exp model
-  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
+  // Check if voice input is available - we support any Gemini model now, but will override to multimodal-live
+  const isVoiceAvailable = apiProvider === 'gemini';
   
   // Initialize speech synthesis
   useEffect(() => {
@@ -54,6 +57,11 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       // Clear any pending error timeouts
       if (errorTimeoutRef.current) {
         window.clearTimeout(errorTimeoutRef.current);
+      }
+      
+      // Clear audio check interval
+      if (audioCheckIntervalRef.current) {
+        window.clearInterval(audioCheckIntervalRef.current);
       }
     };
   }, [isListening]);
@@ -123,9 +131,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const startListening = async () => {
     if (isListening || disabled) return;
     
-    // Strict check for gemini-2.0-flash-exp model
+    // Check if voice input is available
     if (!isVoiceAvailable) {
-      toast.error('Voice input requires Gemini API with gemini-2.0-flash-exp model');
+      toast.error('Voice input requires Gemini API');
       return;
     }
     
@@ -166,13 +174,13 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
         });
       }
       
-      console.log("Starting voice transcription with sample rate:", 16000);
+      console.log("Starting voice transcription with model:", 'gemini-2.0-flash-multimodal-live');
       
       // Start transcription service
       await transcriptionService.start(
         {
           apiKey: geminiApiKey,
-          model: 'gemini-2.0-flash-multimodal-live', // Use the multimodal live model for voice
+          model: 'gemini-2.0-flash-multimodal-live', // Always use the multimodal live model for voice
           temperature: 0.7,
           messages: previousMessages
         },
@@ -182,12 +190,34 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       
       setIsListening(true);
       toast.success('Voice input active - speak now');
+      
+      // Start checking audio level
+      startAudioLevelChecks();
     } catch (error) {
       console.error('Failed to start voice input:', error);
       toast.error(`Failed to start voice input: ${error instanceof Error ? error.message : String(error)}`);
+      setAudioLevel(0);
     } finally {
       setIsInitializing(false);
     }
+  };
+
+  const startAudioLevelChecks = () => {
+    // Clear existing interval if any
+    if (audioCheckIntervalRef.current) {
+      clearInterval(audioCheckIntervalRef.current);
+    }
+    
+    // Start a new interval to check audio level
+    audioCheckIntervalRef.current = window.setInterval(() => {
+      if (isListening) {
+        // Get the audio level from gemini audio processor (mocked here)
+        const mockAudioLevel = Math.random() * 0.5; // Simulate audio level for demonstration
+        setAudioLevel(mockAudioLevel);
+      } else {
+        setAudioLevel(0);
+      }
+    }, 100);
   };
 
   const stopListening = () => {
@@ -195,6 +225,14 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     
     transcriptionService.stop();
     setIsListening(false);
+    setAudioLevel(0);
+    
+    // Clear audio check interval
+    if (audioCheckIntervalRef.current) {
+      clearInterval(audioCheckIntervalRef.current);
+      audioCheckIntervalRef.current = null;
+    }
+    
     toast.info('Voice input stopped');
   };
 
@@ -244,6 +282,12 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
           {voiceOutputEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </Label>
       </div>
+      
+      {isListening && (
+        <div className="w-24 flex items-center gap-1">
+          <Progress value={audioLevel * 100} className="h-2" />
+        </div>
+      )}
       
       <MediaControls disabled={disabled || !isListening} />
       

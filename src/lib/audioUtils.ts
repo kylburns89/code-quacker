@@ -14,6 +14,12 @@ export const audioConfig = {
  * Creates an audio processor to convert audio data for streaming
  */
 export const createAudioProcessor = (audioContext: AudioContext) => {
+  // Ensure we're using the correct sample rate
+  if (audioContext.sampleRate !== audioConfig.sampleRate) {
+    console.warn(`AudioContext sample rate (${audioContext.sampleRate}) does not match required rate (${audioConfig.sampleRate}). This may cause issues.`);
+  }
+  
+  // Use ScriptProcessorNode for broad compatibility
   const processor = audioContext.createScriptProcessor(4096, 1, 1);
   
   // Variables to store audio processing state
@@ -28,6 +34,7 @@ export const createAudioProcessor = (audioContext: AudioContext) => {
     if (!started) {
       started = true;
       startTime = Date.now();
+      console.log("First audio chunk received");
     }
     
     // Clone the input data and add to queue
@@ -80,14 +87,21 @@ export const initMicrophoneStream = async (): Promise<{
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
+        sampleRate: audioConfig.sampleRate,
       },
       video: false,
     });
+    
+    // Check what we actually got
+    const audioTrack = stream.getAudioTracks()[0];
+    console.log("Audio track settings:", audioTrack.getSettings());
     
     // Create the audio context with the correct sample rate
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
       sampleRate: audioConfig.sampleRate,
     });
+    
+    console.log("Created AudioContext with sample rate:", audioContext.sampleRate);
     
     return { stream, audioContext };
   } catch (error) {

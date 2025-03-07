@@ -1,5 +1,5 @@
 
-import { GeminiStreamOptions, GeminiResponse, MediaFrameData } from './types/geminiWebSocketTypes';
+import { GeminiStreamOptions, GeminiResponse, MediaFrameData, LiveRequest } from './types/geminiWebSocketTypes';
 import { GeminiConnection } from './geminiConnection';
 import { GeminiAudioProcessor } from './geminiAudioProcessor';
 
@@ -11,6 +11,7 @@ export class GeminiWebSocketService {
   private onErrorCallback: ((error: string) => void) | null = null;
   private frameCapturingInterval: number | null = null;
   private lastFramesData: MediaFrameData | null = null;
+  private isActive = false;
   
   constructor() {
     this.connection = new GeminiConnection();
@@ -22,6 +23,12 @@ export class GeminiWebSocketService {
    */
   public init(options: GeminiStreamOptions): void {
     this.options = options;
+    
+    // Ensure we're using the correct model for multimodal live input
+    if (!options.model?.includes('multimodal-live')) {
+      console.warn('Using model that may not support multimodal live input:', options.model);
+      console.info('Recommended model: gemini-2.0-flash-multimodal-live');
+    }
     
     this.connection.init(
       options,
@@ -41,8 +48,16 @@ export class GeminiWebSocketService {
     onText: (text: string) => void,
     onError: (error: string) => void
   ): Promise<void> {
+    if (this.isActive) {
+      console.log('WebSocket service is already active, stopping first');
+      this.stopListening();
+    }
+    
     this.onTextCallback = onText;
     this.onErrorCallback = onError;
+    this.isActive = true;
+    
+    console.log('Starting WebSocket listening with audio context sample rate:', audioContext.sampleRate);
     
     // Start audio processing
     this.audioProcessor.start(
@@ -54,6 +69,7 @@ export class GeminiWebSocketService {
     
     // Send initial request to start the conversation
     this.sendInitialRequest();
+    console.log('Initial request sent, session ID:', this.connection.getSessionId());
   }
 
   /**
@@ -67,6 +83,10 @@ export class GeminiWebSocketService {
    * Stop listening and close connections
    */
   public stopListening(): void {
+    if (!this.isActive) return;
+    
+    console.log('Stopping WebSocket listening');
+    
     // Stop audio processing
     this.audioProcessor.stop();
     
@@ -78,6 +98,8 @@ export class GeminiWebSocketService {
     
     // Send end message to API
     this.sendEndRequest();
+    
+    this.isActive = false;
   }
 
   /**
@@ -107,6 +129,7 @@ export class GeminiWebSocketService {
       if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
         const part = candidate.content.parts[0];
         if (part.text && this.onTextCallback) {
+          console.log('Received text from Gemini:', part.text.substring(0, 50) + (part.text.length > 50 ? '...' : ''));
           this.onTextCallback(part.text);
         }
       }
@@ -117,6 +140,7 @@ export class GeminiWebSocketService {
    * Handle WebSocket errors
    */
   private handleWSError(event: Event): void {
+    console.error('WebSocket error:', event);
     if (this.onErrorCallback) {
       this.onErrorCallback('WebSocket connection error');
     }
@@ -126,19 +150,27 @@ export class GeminiWebSocketService {
    * Handle WebSocket close event
    */
   private handleWSClose(event: CloseEvent): void {
-    // No specific handling needed currently
+    console.log('WebSocket closed with code:', event.code, 'reason:', event.reason);
+    this.isActive = false;
   }
 
   /**
    * Send audio chunks to Gemini API
    */
   private sendAudioChunks(chunks: Int16Array[]): void {
-    if (!this.connection.isOpen()) return;
+    if (!this.connection.isOpen() || !this.isActive) {
+      console.warn('Cannot send audio chunks: connection not open or inactive');
+      return;
+    }
     
     // Process each audio chunk
     chunks.forEach((int16Data: Int16Array) => {
+      if (int16Data.length === 0) {
+        return; // Skip empty chunks
+      }
+      
       // Create request with audio data
-      const request: any = {
+      const request: LiveRequest = {
         multi_modal_live_input: {
           session_id: this.connection.getSessionId(),
           audio: {
@@ -171,9 +203,12 @@ export class GeminiWebSocketService {
    * Send the initial request to start the conversation
    */
   private sendInitialRequest(): void {
-    if (!this.connection.isOpen()) return;
+    if (!this.connection.isOpen()) {
+      console.error('Cannot send initial request: connection not open');
+      return;
+    }
     
-    const initialRequest = {
+    const initialRequest: LiveRequest = {
       contents: this.options.messages?.map(msg => ({
         role: msg.role,
         parts: [{ text: msg.content }]
@@ -191,6 +226,7 @@ export class GeminiWebSocketService {
       }
     };
     
+    console.log('Sending initial request with session ID:', this.connection.getSessionId());
     this.connection.send(initialRequest);
   }
 
@@ -200,13 +236,14 @@ export class GeminiWebSocketService {
   private sendEndRequest(): void {
     if (!this.connection.isOpen()) return;
     
-    const endRequest = {
+    const endRequest: LiveRequest = {
       multi_modal_live_input: {
         session_id: this.connection.getSessionId(),
         end_session: true,
       },
     };
     
+    console.log('Sending end request with session ID:', this.connection.getSessionId());
     this.connection.send(endRequest);
   }
 }
