@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -30,6 +31,7 @@ const SettingsDialog: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'gemini' | 'together'>(apiProvider);
 
   // Check if voice input would be available with current settings
+  // Strictly only for gemini-2.0-flash-exp model
   const isVoiceAvailable = activeTab === 'gemini' && localGeminiModelName === 'gemini-2.0-flash-exp';
 
   useEffect(() => {

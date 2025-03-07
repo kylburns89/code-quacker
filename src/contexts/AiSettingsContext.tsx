@@ -73,8 +73,9 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
     return apiProvider === 'gemini' ? hasGeminiApiKey() : hasTogetherApiKey();
   };
   
+  // Strictly check for gemini-2.0-flash-exp model for voice input
   const isVoiceInputAvailable = () => {
-    return apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-ex' && hasGeminiApiKey();
+    return apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp' && hasGeminiApiKey();
   };
 
   const showSettingsDialog = () => setIsSettingsDialogOpen(true);

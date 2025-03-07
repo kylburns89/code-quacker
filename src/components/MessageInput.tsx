@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -29,7 +28,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [message, setMessage] = useState<string>('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showExamples, setShowExamples] = useState(false);
-  const { isVoiceInputAvailable } = useAiSettings();
+  const { apiProvider, geminiModelName } = useAiSettings();
+
+  // Check if voice input is available - strictly for gemini-2.0-flash-exp only
+  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
 
   // Auto-resize textarea
   useEffect(() => {
@@ -119,7 +121,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             disabled={isLoading}
           />
           
-          {isVoiceInputAvailable() && (
+          {isVoiceAvailable && (
             <VoiceInput 
               onTextReceived={handleVoiceInput}
               disabled={isLoading}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
@@ -17,7 +18,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const { apiProvider, geminiApiKey, geminiModelName } = useAiSettings();
   const { currentConversation } = useChat();
   
-  // Check if voice input is available based on model
+  // Check if voice input is available ONLY for gemini-2.0-flash-exp model
   const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
   
   // Cleanup on component unmount
@@ -32,7 +33,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const startListening = async () => {
     if (isListening || disabled) return;
     
-    // Check if using correct provider and model
+    // Strict check for gemini-2.0-flash-exp model
     if (!isVoiceAvailable) {
       toast.error('Voice input requires Gemini API with gemini-2.0-flash-exp model');
       return;
