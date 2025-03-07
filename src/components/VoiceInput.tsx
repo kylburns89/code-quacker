@@ -18,7 +18,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const { currentConversation } = useChat();
   
   // Check if voice input is available based on model
-  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-ex';
+  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
   
   // Cleanup on component unmount
   useEffect(() => {
@@ -34,7 +34,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     
     // Check if using correct provider and model
     if (!isVoiceAvailable) {
-      toast.error('Voice input requires Gemini API with gemini-2.0-flash-ex model');
+      toast.error('Voice input requires Gemini API with gemini-2.0-flash-exp model');
       return;
     }
     

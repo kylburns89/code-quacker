@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -31,7 +30,7 @@ const SettingsDialog: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'gemini' | 'together'>(apiProvider);
 
   // Check if voice input would be available with current settings
-  const isVoiceAvailable = activeTab === 'gemini' && localGeminiModelName === 'gemini-2.0-flash-ex';
+  const isVoiceAvailable = activeTab === 'gemini' && localGeminiModelName === 'gemini-2.0-flash-exp';
 
   useEffect(() => {
     setLocalGeminiApiKey(geminiApiKey);
@@ -48,7 +47,7 @@ const SettingsDialog: React.FC = () => {
     }
     
     if (localGeminiModelName !== geminiModelName) {
-      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-ex');
+      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-exp');
     }
     
     if (localTogetherApiKey !== togetherApiKey) {
@@ -99,7 +98,7 @@ const SettingsDialog: React.FC = () => {
               />
               <Input
                 id="geminiModelName"
-                placeholder="Model name (defaults to gemini-2.0-flash-ex)"
+                placeholder="Model name (defaults to gemini-2.0-flash-exp)"
                 value={localGeminiModelName}
                 onChange={(e) => setLocalGeminiModelName(e.target.value)}
                 className="w-full"
@@ -109,14 +108,14 @@ const SettingsDialog: React.FC = () => {
                 <Alert className="bg-secondary">
                   <Mic className="h-4 w-4 mr-2" />
                   <AlertDescription>
-                    Voice input is available with the gemini-2.0-flash-ex model.
+                    Voice input is available with the gemini-2.0-flash-exp model.
                   </AlertDescription>
                 </Alert>
               )}
               
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Default model: gemini-2.0-flash-ex. Use this model for voice input capability.
+                Default model: gemini-2.0-flash-exp. Use this model for voice input capability.
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://ai.google.dev/tutorials/setup', '_blank')} size="sm">
