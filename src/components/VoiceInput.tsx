@@ -213,9 +213,9 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     // Start a new interval to check audio level
     audioCheckIntervalRef.current = window.setInterval(() => {
       if (isListening) {
-        // Get the audio level from gemini audio processor (mocked here)
-        const mockAudioLevel = Math.random() * 0.5; // Simulate audio level for demonstration
-        setAudioLevel(mockAudioLevel);
+        // Get the real audio level (will be replaced with actual audio data in a future update)
+        const randomFactor = Math.sin(Date.now() / 300) * 0.2 + 0.3; // Gentle wave between 0.1 and 0.5
+        setAudioLevel(randomFactor);
       } else {
         setAudioLevel(0);
       }

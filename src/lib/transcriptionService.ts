@@ -1,7 +1,8 @@
 
-import { initMicrophoneStream, createAudioProcessor, stopMediaStream } from './audioUtils';
+import { initMicrophoneStream, createAudioProcessor, stopMediaStream, audioConfig } from './audioUtils';
 import { geminiWebSocketService, GeminiStreamOptions } from './geminiWebSocket';
 import { MediaFrameData } from './types/geminiWebSocketTypes';
+import { toast } from 'sonner';
 
 export class TranscriptionService {
   private stream: MediaStream | null = null;
@@ -46,7 +47,9 @@ export class TranscriptionService {
         model: options.model,
         temperature: options.temperature,
         maxOutputTokens: options.maxOutputTokens,
-        messagesCount: options.messages?.length || 0
+        messagesCount: options.messages?.length || 0,
+        useFixedSampleRate: true,
+        fixedSampleRate: audioConfig.sampleRate
       });
       
       // Ensure we're using the correct model for voice input
@@ -60,12 +63,18 @@ export class TranscriptionService {
       // Initialize WebSocket connection first
       geminiWebSocketService.init(options);
       
-      // Initialize microphone stream
+      // Initialize microphone stream with fixed sample rate
       const { stream, audioContext } = await initMicrophoneStream();
       this.stream = stream;
       this.audioContext = audioContext;
       
-      console.log("Audio context sample rate:", audioContext.sampleRate);
+      console.log("Audio context created with sample rate:", audioContext.sampleRate);
+      
+      // Verify sample rate matches our desired rate
+      if (audioContext.sampleRate !== audioConfig.sampleRate) {
+        console.warn(`Warning: Audio context sample rate (${audioContext.sampleRate}) doesn't match desired rate (${audioConfig.sampleRate}). Will attempt to work with provided rate.`);
+        // We won't throw an error here, but we'll log it
+      }
       
       // Create audio processor
       this.audioProcessor = createAudioProcessor(audioContext);
@@ -173,6 +182,7 @@ export class TranscriptionService {
         (error.includes("sample-rate") || error.includes("WebSocket connection error"))) {
       this.retryCount++;
       console.log(`Retrying transcription (attempt ${this.retryCount} of ${this.maxRetries})...`);
+      toast.info(`Retrying voice input (attempt ${this.retryCount})`);
       
       // Stop and restart with a delay
       this.stop();

@@ -1,5 +1,5 @@
 
-import { convertFloat32ToInt16 } from './audioUtils';
+import { convertFloat32ToInt16, audioConfig } from './audioUtils';
 
 export class GeminiAudioProcessor {
   private audioProcessor: any = null;
@@ -29,6 +29,7 @@ export class GeminiAudioProcessor {
       this.sendAudioCallback = sendAudio;
       
       console.log("Starting audio processing with sample rate:", audioContext.sampleRate);
+      console.log("Desired sample rate:", audioConfig.sampleRate);
       
       // Ensure audio tracks are enabled and active
       const audioTracks = stream.getAudioTracks();
@@ -41,6 +42,13 @@ export class GeminiAudioProcessor {
       // Connect microphone source to audio processor
       this.source = this.audioContext.createMediaStreamSource(stream);
       this.source.connect(this.audioProcessor.processor);
+      
+      // Connect to audio destination (needed for audio processing to work)
+      // Using a gain node set to 0 to avoid feedback
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.value = 0;
+      this.audioProcessor.processor.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
       
       // Set listening flag before starting interval
       this.isListening = true;
@@ -119,8 +127,8 @@ export class GeminiAudioProcessor {
       });
       
       // Only send processed chunks if there's actual audio
-      if (processedChunks.length > 0 && this.audioLevel > 0.001) {
-        // Send processed chunks
+      if (processedChunks.length > 0) {
+        // Send processed chunks even with low audio level to capture quiet speech
         this.sendAudioCallback(processedChunks);
       }
     } catch (error) {
