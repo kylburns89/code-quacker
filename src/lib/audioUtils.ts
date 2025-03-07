@@ -74,10 +74,9 @@ export const initMicrophoneStream = async (): Promise<{
   audioContext: AudioContext;
 }> => {
   try {
+    // First, get the user's microphone stream with the desired settings
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        sampleRate: audioConfig.sampleRate,
-        channelCount: audioConfig.channelCount,
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
@@ -85,6 +84,7 @@ export const initMicrophoneStream = async (): Promise<{
       video: false,
     });
     
+    // Create the audio context with the correct sample rate
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
       sampleRate: audioConfig.sampleRate,
     });

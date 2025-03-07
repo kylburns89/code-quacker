@@ -24,16 +24,18 @@ export class TranscriptionService {
       this.onTranscriptionCallback = onTranscription;
       this.onErrorCallback = onError;
       
+      // Initialize WebSocket connection first
+      geminiWebSocketService.init(options);
+      
       // Initialize microphone stream
       const { stream, audioContext } = await initMicrophoneStream();
       this.stream = stream;
       this.audioContext = audioContext;
       
+      console.log("Audio context sample rate:", audioContext.sampleRate);
+      
       // Create audio processor
       this.audioProcessor = createAudioProcessor(audioContext);
-      
-      // Initialize WebSocket connection
-      geminiWebSocketService.init(options);
       
       // Start listening to microphone
       await geminiWebSocketService.startListening(
@@ -47,7 +49,7 @@ export class TranscriptionService {
       this.isActive = true;
     } catch (error) {
       console.error('Failed to start transcription:', error);
-      this.handleError(error instanceof Error ? error.message : 'Failed to start transcription');
+      this.handleError(error instanceof Error ? error.message : String(error));
       // Cleanup on error
       this.stop();
     }
@@ -59,26 +61,31 @@ export class TranscriptionService {
   public stop(): void {
     if (!this.isActive) return;
     
-    // Stop WebSocket listening
-    geminiWebSocketService.stopListening();
-    geminiWebSocketService.closeConnection();
-    
-    // Stop and clean up media stream
-    if (this.stream) {
-      stopMediaStream(this.stream);
-      this.stream = null;
-    }
-    
-    // Close audio context
-    if (this.audioContext) {
-      if (this.audioContext.state !== 'closed') {
-        this.audioContext.close();
+    try {
+      // Stop WebSocket listening
+      geminiWebSocketService.stopListening();
+      geminiWebSocketService.closeConnection();
+      
+      // Stop and clean up media stream
+      if (this.stream) {
+        stopMediaStream(this.stream);
+        this.stream = null;
       }
-      this.audioContext = null;
+      
+      // Close audio context
+      if (this.audioContext) {
+        if (this.audioContext.state !== 'closed') {
+          this.audioContext.close().catch(err => console.error("Error closing audio context:", err));
+        }
+        this.audioContext = null;
+      }
+      
+      this.audioProcessor = null;
+    } catch (error) {
+      console.error('Error during transcription stop:', error);
+    } finally {
+      this.isActive = false;
     }
-    
-    this.audioProcessor = null;
-    this.isActive = false;
   }
   
   /**
@@ -94,6 +101,7 @@ export class TranscriptionService {
    * Handle errors during transcription
    */
   private handleError(error: string): void {
+    console.error('Transcription error:', error);
     if (this.onErrorCallback) {
       this.onErrorCallback(error);
     }

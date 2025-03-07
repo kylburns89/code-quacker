@@ -7,6 +7,8 @@ export class GeminiConnection {
   private onMessageCallback: ((response: GeminiResponse) => void) | null = null;
   private onErrorCallback: ((error: Event) => void) | null = null;
   private onCloseCallback: ((event: CloseEvent) => void) | null = null;
+  private connectionAttempts = 0;
+  private maxConnectionAttempts = 3;
   
   constructor() {
     this.sessionId = Math.random().toString(36).substring(2, 9);
@@ -21,28 +23,68 @@ export class GeminiConnection {
     onError: (error: Event) => void,
     onClose: (event: CloseEvent) => void
   ): void {
-    // Create WebSocket connection to Gemini API using v1alpha endpoint
-    const wsUrl = `wss://generativelanguage.googleapis.com/v1alpha/models/${options.model || 'gemini-2.0-flash-multimodal-live'}:streamGenerateContent?key=${options.apiKey}`;
-    this.webSocket = new WebSocket(wsUrl);
+    this.connectionAttempts = 0;
     
     // Store callbacks
     this.onMessageCallback = onMessage;
     this.onErrorCallback = onError;
     this.onCloseCallback = onClose;
     
-    // Setup WebSocket event handlers
-    this.webSocket.onopen = this.handleWSOpen.bind(this);
-    this.webSocket.onmessage = this.handleWSMessage.bind(this);
-    this.webSocket.onerror = this.handleWSError.bind(this);
-    this.webSocket.onclose = this.handleWSClose.bind(this);
+    this.createWebSocketConnection(options);
+  }
+
+  /**
+   * Create WebSocket connection with retry logic
+   */
+  private createWebSocketConnection(options: GeminiStreamOptions): void {
+    try {
+      this.connectionAttempts++;
+      
+      // Create WebSocket connection to Gemini API using v1alpha endpoint
+      const wsUrl = `wss://generativelanguage.googleapis.com/v1alpha/models/${options.model || 'gemini-2.0-flash-multimodal-live'}:streamGenerateContent?key=${options.apiKey}`;
+      
+      console.log(`Attempting WebSocket connection (attempt ${this.connectionAttempts})`);
+      this.webSocket = new WebSocket(wsUrl);
+      
+      // Setup WebSocket event handlers
+      this.webSocket.onopen = this.handleWSOpen.bind(this);
+      this.webSocket.onmessage = this.handleWSMessage.bind(this);
+      this.webSocket.onerror = (event) => {
+        console.error('WebSocket error:', event);
+        this.handleWSError(event);
+        
+        // Attempt to reconnect if within retry limits
+        if (this.connectionAttempts < this.maxConnectionAttempts) {
+          console.log(`Retrying connection (${this.connectionAttempts}/${this.maxConnectionAttempts})`);
+          setTimeout(() => this.createWebSocketConnection(options), 1000);
+        }
+      };
+      this.webSocket.onclose = this.handleWSClose.bind(this);
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error);
+      if (this.onErrorCallback) {
+        this.onErrorCallback(new Event('error'));
+      }
+    }
   }
 
   /**
    * Send data through the WebSocket
    */
   public send(data: any): void {
-    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) return;
-    this.webSocket.send(JSON.stringify(data));
+    if (!this.webSocket || this.webSocket.readyState !== WebSocket.OPEN) {
+      console.warn('Cannot send data: WebSocket not open');
+      return;
+    }
+    
+    try {
+      this.webSocket.send(JSON.stringify(data));
+    } catch (error) {
+      console.error('Error sending WebSocket data:', error);
+      if (this.onErrorCallback) {
+        this.onErrorCallback(new Event('error'));
+      }
+    }
   }
 
   /**
@@ -50,8 +92,13 @@ export class GeminiConnection {
    */
   public close(): void {
     if (this.webSocket) {
-      this.webSocket.close();
-      this.webSocket = null;
+      try {
+        this.webSocket.close();
+      } catch (error) {
+        console.error('Error closing WebSocket:', error);
+      } finally {
+        this.webSocket = null;
+      }
     }
   }
   
@@ -74,6 +121,8 @@ export class GeminiConnection {
    */
   private handleWSOpen(): void {
     console.log('WebSocket connection established');
+    // Reset connection attempts on successful connection
+    this.connectionAttempts = 0;
   }
 
   /**

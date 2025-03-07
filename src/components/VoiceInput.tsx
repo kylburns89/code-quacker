@@ -23,6 +23,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const { apiProvider, geminiApiKey, geminiModelName } = useAiSettings();
   const { currentConversation } = useChat();
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const errorTimeoutRef = useRef<number | null>(null);
   
   // Check if voice input is available ONLY for gemini-2.0-flash-exp model
   const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
@@ -47,6 +48,11 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     return () => {
       if (isListening) {
         stopListening();
+      }
+      
+      // Clear any pending error timeouts
+      if (errorTimeoutRef.current) {
+        window.clearTimeout(errorTimeoutRef.current);
       }
     };
   }, [isListening]);
@@ -78,17 +84,28 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     utterance.volume = 1.0;
     
     // Use a neutral voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(voice => 
-      voice.name.includes('Google') || voice.name.includes('Samantha') || voice.name.includes('Karen')
-    );
+    // Load voices before trying to set them
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) {
+        // If voices aren't loaded yet, wait and try again
+        window.setTimeout(loadVoices, 100);
+        return;
+      }
+      
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') || voice.name.includes('Samantha') || voice.name.includes('Karen')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      // Speak the text
+      window.speechSynthesis.speak(utterance);
+    };
     
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-    
-    // Speak the text
-    window.speechSynthesis.speak(utterance);
+    loadVoices();
   };
 
   const toggleVoiceOutput = () => {
@@ -120,6 +137,12 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     setIsInitializing(true);
     
     try {
+      // Clear any existing error timeouts
+      if (errorTimeoutRef.current) {
+        window.clearTimeout(errorTimeoutRef.current);
+        errorTimeoutRef.current = null;
+      }
+      
       // Prepare conversation history for context
       const previousMessages = currentConversation?.messages.map(msg => ({
         role: msg.role === 'user' ? 'user' : 'model',
@@ -142,6 +165,8 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
         });
       }
       
+      console.log("Starting voice transcription with sample rate:", 16000);
+      
       // Start transcription service
       await transcriptionService.start(
         {
@@ -155,9 +180,10 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       );
       
       setIsListening(true);
+      toast.success('Voice input active - speak now');
     } catch (error) {
       console.error('Failed to start voice input:', error);
-      toast.error('Failed to start voice input');
+      toast.error(`Failed to start voice input: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsInitializing(false);
     }
@@ -168,6 +194,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
     
     transcriptionService.stop();
     setIsListening(false);
+    toast.info('Voice input stopped');
   };
 
   const handleTranscriptionReceived = (text: string) => {
@@ -179,7 +206,16 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   const handleTranscriptionError = (error: string) => {
     console.error('Transcription error:', error);
     toast.error(`Voice input error: ${error}`);
-    stopListening();
+    
+    // Stop listening on error after a short delay to allow the error toast to be seen
+    if (errorTimeoutRef.current) {
+      window.clearTimeout(errorTimeoutRef.current);
+    }
+    
+    errorTimeoutRef.current = window.setTimeout(() => {
+      stopListening();
+      errorTimeoutRef.current = null;
+    }, 500);
   };
 
   const toggleListening = () => {
