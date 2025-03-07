@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
@@ -49,10 +48,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
       setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Failed to send message",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
+      toast.error("Failed to send message", {
+        description: error instanceof Error ? error.message : "An unknown error occurred"
       });
     }
   };
