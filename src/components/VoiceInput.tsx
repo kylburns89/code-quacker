@@ -19,9 +19,7 @@ interface VoiceInputProps {
 const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = false }) => {
   const [isListening, setIsListening] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(() => {
-    return localStorage.getItem('voice_output_enabled') === 'true';
-  });
+  const [voiceOutputEnabled, setVoiceOutputEnabled] = useState(false); // Default to false for real-time mode
   const [audioLevel, setAudioLevel] = useState(0);
   const { apiProvider, geminiApiKey, geminiModelName } = useAiSettings();
   const { currentConversation } = useChat();
@@ -32,9 +30,11 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
   // Check if voice input is available - we support any Gemini model now, but will override to multimodal-live
   const isVoiceAvailable = apiProvider === 'gemini';
   
-  // Initialize speech synthesis
+  // Initialize speech synthesis if enabled
   useEffect(() => {
-    speechSynthesisRef.current = new SpeechSynthesisUtterance();
+    if (voiceOutputEnabled) {
+      speechSynthesisRef.current = new SpeechSynthesisUtterance();
+    }
     
     // Save voice output preference
     localStorage.setItem('voice_output_enabled', voiceOutputEnabled.toString());
@@ -126,6 +126,8 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
       // Cancel any ongoing speech when disabling
       window.speechSynthesis.cancel();
     }
+    
+    toast.info(newState ? 'Voice output enabled' : 'Real-time streaming mode');
   };
 
   const startListening = async () => {
@@ -238,6 +240,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({ onTextReceived, disabled = fals
 
   const handleTranscriptionReceived = (text: string) => {
     if (text.trim()) {
+      console.log("Received transcription:", text);
       onTextReceived(text);
     }
   };

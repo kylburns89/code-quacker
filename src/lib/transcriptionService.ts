@@ -13,7 +13,7 @@ export class TranscriptionService {
   private mediaFramesUpdateInterval: number | null = null;
   private currentFrames: MediaFrameData | null = null;
   private retryCount = 0;
-  private maxRetries = 2;
+  private maxRetries = 3; // Increased retries
   
   /**
    * Set media frames for video input
