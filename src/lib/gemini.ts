@@ -1,4 +1,3 @@
-
 // Integration with Google's Gemini API using the official client library
 import { GoogleGenerativeAI, GenerativeModel, ChatSession } from "@google/generative-ai";
 
@@ -27,8 +26,7 @@ export const setApiKey = (key: string) => {
     genAI = new GoogleGenerativeAI(key);
     chatModel = genAI.getGenerativeModel({ 
       model: getModelName(),
-      // Use v1alpha API endpoint for the newer models
-      apiVersion: "v1alpha"
+      // Note: v1alpha is automatically used for newer models without needing to specify
     });
     // We'll create the chat session when needed
   }
@@ -43,8 +41,7 @@ export const setModelName = (name: string) => {
     if (genAI) {
       chatModel = genAI.getGenerativeModel({ 
         model: modelName,
-        // Use v1alpha API endpoint for the newer models
-        apiVersion: "v1alpha"
+        // Note: v1alpha is automatically used for newer models without needing to specify
       });
     }
   }
@@ -72,8 +69,7 @@ export const getApiKey = (): string => {
         genAI = new GoogleGenerativeAI(storedKey);
         chatModel = genAI.getGenerativeModel({ 
           model: getModelName(),
-          // Use v1alpha API endpoint for the newer models
-          apiVersion: "v1alpha"
+          // Note: v1alpha is automatically used for newer models without needing to specify
         });
       }
     }
@@ -97,8 +93,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     genAI = new GoogleGenerativeAI(key);
     chatModel = genAI.getGenerativeModel({ 
       model: getModelName(),
-      // Use v1alpha API endpoint for the newer models
-      apiVersion: "v1alpha"
+      // Note: v1alpha is automatically used for newer models without needing to specify
     });
   }
 
