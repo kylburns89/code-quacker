@@ -9,6 +9,7 @@ interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
   isLoading: boolean;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 const EXAMPLE_PROMPTS = [
@@ -22,7 +23,8 @@ const EXAMPLE_PROMPTS = [
 const MessageInput: React.FC<MessageInputProps> = ({ 
   onSendMessage, 
   isLoading, 
-  placeholder = "Explain your coding problem..." 
+  placeholder = "Explain your coding problem...",
+  disabled = false
 }) => {
   const [message, setMessage] = useState<string>('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -99,6 +101,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             className="h-9 w-9 shrink-0 rounded-md"
             onClick={() => setShowExamples(!showExamples)}
             title="Show examples"
+            disabled={disabled}
           >
             <Lightbulb className="h-5 w-5 text-muted-foreground" />
           </Button>
@@ -111,14 +114,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
             placeholder={placeholder}
             className="flex-1 max-h-32 rounded-md border-0 bg-transparent focus-visible:ring-0 resize-none"
             rows={1}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
           />
           
           <Button
             type="submit"
             size="icon"
             className="h-9 w-9 shrink-0 rounded-md ml-2"
-            disabled={isLoading || !message.trim()}
+            disabled={isLoading || !message.trim() || disabled}
           >
             <SendHorizonal className="h-5 w-5" />
           </Button>
