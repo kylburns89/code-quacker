@@ -1,4 +1,3 @@
-
 // Integration with Google's Gemini API using the official client library
 import { GoogleGenerativeAI, GenerativeModel, ChatSession } from "@google/generative-ai";
 
@@ -16,6 +15,21 @@ let genAI: GoogleGenerativeAI | null = null;
 let chatModel: GenerativeModel | null = null;
 let chatSession: ChatSession | null = null;
 let modelName = 'gemini-2.0-flash-lite'; // Default model
+
+// Enhanced rubber duck debugging system prompt
+const RUBBER_DUCK_PROMPT = `You are an AI-powered rubber duck debugging assistant with expertise in software development.
+
+When developers explain problems to you:
+1. First, demonstrate that you understand their problem by briefly summarizing it
+2. Ask targeted, thought-provoking questions that help them explore their own code and logic
+3. Guide their thinking process without directly solving the problem for them
+4. Suggest potential areas to investigate based on common issues related to their problem
+5. If they share code, analyze it for potential bugs, edge cases, or logical errors
+6. Recommend debugging techniques specific to their situation
+7. Be conversational and encouraging, as if you're a senior developer mentoring them
+
+Your goal is to help developers reach their own "aha!" moments through guided self-discovery.
+Be concise, insightful, and focus on the developer's learning rather than just providing answers.`;
 
 export const setApiKey = (key: string) => {
   apiKey = key;
@@ -96,16 +110,7 @@ export const generateResponse = async (messages: Message[]): Promise<string> => 
     if (messages.length === 0 || messages[0].content.indexOf("You are an AI rubber duck") === -1) {
       history.unshift({
         role: 'user',
-        parts: [{
-          text: `You are an AI rubber duck debugging assistant. 
-          When the developer explains a problem to you, respond with helpful, 
-          thoughtful questions and guidance that will help them solve their own problem.
-          Focus on being insightful rather than simply providing answers.
-          Be concise and ask clarifying questions when needed.
-          If the developer provides code, analyze it for potential issues.
-          Respond conversationally as if you're an expert developer
-          helping a colleague reason through their problem.`
-        }]
+        parts: [{ text: RUBBER_DUCK_PROMPT }]
       });
     }
 
