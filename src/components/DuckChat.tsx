@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { useChat } from '../contexts/ChatContext';
-import { AlertTriangle, PanelLeft, Download, Upload, Trash2, Edit, Save, Check, X, PlusCircle } from 'lucide-react';
+import { AlertTriangle, PanelLeft, Download, Upload, Trash2, Edit, Save, Check, X, PlusCircle, MessageSquare } from 'lucide-react';
 import { useAiSettings } from '../contexts/AiSettingsContext';
 import SettingsDialog from './SettingsDialog';
 import { Button } from './ui/button';
@@ -24,7 +24,7 @@ const DuckChat: React.FC = () => {
     deleteConversation 
   } = useChat();
   
-  const { hasCurrentProviderApiKey, showSettingsDialog } = useAiSettings();
+  const { hasCurrentProviderApiKey, showSettingsDialog, apiProvider } = useAiSettings();
   const [showSidebar, setShowSidebar] = useState(true);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
@@ -33,10 +33,9 @@ const DuckChat: React.FC = () => {
   
   // Show settings dialog if no API key is set for the selected provider
   useEffect(() => {
-    if (!hasCurrentProviderApiKey()) {
-      showSettingsDialog();
-    }
-  }, [hasCurrentProviderApiKey, showSettingsDialog]);
+    // We no longer force the settings dialog to open
+    // This is now optional for the user
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     await sendMessage(content);
@@ -216,6 +215,23 @@ const DuckChat: React.FC = () => {
             </div>
           )}
           
+          {!hasCurrentProviderApiKey() && (
+            <div className="bg-warning/10 border border-warning/30 rounded-md p-3 m-4 text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <div className="flex-1">
+                <p>No API key set for {apiProvider === 'gemini' ? 'Google Gemini' : 'Together.ai'}. Please add your API key to chat with the AI.</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={showSettingsDialog} 
+                  className="mt-2"
+                >
+                  Open Settings
+                </Button>
+              </div>
+            </div>
+          )}
+          
           <MessageList 
             messages={currentConversation?.messages || []} 
             isLoading={isLoading} 
@@ -226,6 +242,11 @@ const DuckChat: React.FC = () => {
           <MessageInput 
             onSendMessage={handleSendMessage} 
             isLoading={isLoading} 
+            disabled={!hasCurrentProviderApiKey()}
+            placeholder={hasCurrentProviderApiKey() 
+              ? "Type your message..." 
+              : `Set up your ${apiProvider === 'gemini' ? 'Google Gemini' : 'Together.ai'} API key to start chatting`
+            }
           />
         </div>
       </div>

@@ -7,6 +7,7 @@ import { MessageSquare, Info, Github, Moon, Sun, Settings } from 'lucide-react';
 import Duck from './Duck';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAiSettings } from '../contexts/AiSettingsContext';
+import { Toaster } from 'sonner';
 
 interface LayoutProps {
   children: ReactNode;
@@ -103,6 +104,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <p>© {new Date().getFullYear()} Code Quacker Debugging Assistant</p>
         </div>
       </footer>
+
+      {/* Toast container */}
+      <Toaster position="top-right" />
     </div>
   );
 };

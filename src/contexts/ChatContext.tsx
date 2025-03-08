@@ -1,8 +1,10 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { generateResponse as generateGeminiResponse } from '../lib/gemini';
 import { generateResponse as generateTogetherResponse } from '../lib/together';
 import { saveConversation, loadConversations } from '../lib/storage';
 import { useAiSettings } from './AiSettingsContext';
+import { toast } from 'sonner';
 
 export type Message = {
   id: string;
@@ -33,7 +35,7 @@ type ChatContextType = {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const { apiProvider } = useAiSettings();
+  const { apiProvider, hasCurrentProviderApiKey, showSettingsDialog } = useAiSettings();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -119,6 +121,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     
     // Otherwise, process the message as usual
     if (!content.trim()) return;
+    
+    // Check if API key is set before proceeding
+    if (!hasCurrentProviderApiKey()) {
+      toast.error(`Please set your ${apiProvider === 'gemini' ? 'Google Gemini' : 'Together.ai'} API key in settings to chat with the AI`, {
+        action: {
+          label: "Open Settings",
+          onClick: showSettingsDialog
+        }
+      });
+      return;
+    }
     
     setIsLoading(true);
     setError(null);

@@ -146,10 +146,7 @@ const SettingsDialog: React.FC = () => {
           <Button variant="outline" onClick={hideSettingsDialog}>
             Cancel
           </Button>
-          <Button onClick={handleSaveSettings} disabled={
-            (activeTab === 'gemini' && !localGeminiApiKey.trim()) || 
-            (activeTab === 'together' && !localTogetherApiKey.trim())
-          }>
+          <Button onClick={handleSaveSettings}>
             Save & Use {activeTab === 'gemini' ? 'Google Gemini' : 'Together.ai'}
           </Button>
         </div>
