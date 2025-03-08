@@ -1,6 +1,7 @@
 # Code Quacker
 
-![Code Quacker](public/og-image.png)
+![Code Quacker](https://github.com/user-attachments/assets/3c3cc542-15df-4805-a972-b7e353dfda71)
+
 
 ## About
 
