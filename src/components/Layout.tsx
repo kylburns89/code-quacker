@@ -81,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
             <a 
-              href="https://github.com" 
+              href="https://github.com/kylburns89/code-quacker" 
               target="_blank" 
               rel="noopener noreferrer"
               className="p-2 rounded-full hover:bg-secondary transition-colors"
