@@ -29,7 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Code<span className="text-primary">Quacker</span>
               </span>
             </div>
-            <span className="text-xs italic text-accent-foreground -mt-1">
+            <span className="text-xs italic text-accent-foreground -mt-1 pl-10">
               Let's quack the code together!
             </span>
           </Link>
