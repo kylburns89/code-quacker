@@ -52,7 +52,7 @@ const SettingsDialog: React.FC = () => {
     }
     
     if (localTogetherModelName !== togetherModelName) {
-      setTogetherModelName(localTogetherModelName || 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free');
+      setTogetherModelName(localTogetherModelName || 'deepseek-ai/DeepSeek-V3');
     }
     
     // Set the active provider
@@ -131,7 +131,7 @@ const SettingsDialog: React.FC = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Default model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
+                Default model: deepseek-ai/DeepSeek-V3
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://api.together.xyz/settings/api-keys', '_blank')} size="sm">

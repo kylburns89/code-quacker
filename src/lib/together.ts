@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 // Store the API key and model name
 let apiKey = '';
-let modelName = 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free'; // Default model
+let modelName = 'deepseek-ai/DeepSeek-V3'; // Default model
 let client: OpenAI | null = null;
 
 export const setApiKey = (key: string) => {
@@ -32,7 +32,7 @@ export const getModelName = (): string => {
     if (storedModel) {
       modelName = storedModel;
     } else {
-      modelName = 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free';
+      modelName = 'deepseek-ai/DeepSeek-V3';
     }
   }
   return modelName;
