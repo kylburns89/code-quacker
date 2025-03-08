@@ -1,69 +1,95 @@
-# Welcome to your Lovable project
+# Code Quacker
 
-## Project info
+![Code Quacker](public/og-image.png)
 
-**URL**: https://lovable.dev/projects/a5db48ec-bb54-4c2f-ba39-e26a64c37363
+## About
 
-## How can I edit this code?
+Code Quacker is an AI-powered rubber duck debugging assistant that helps developers solve coding problems through thoughtful conversation. By explaining your code issues to the friendly duck assistant, you can often discover solutions on your own while getting intelligent guidance from AI.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- **AI-Powered Conversations**: Utilizes Google's Gemini AI and Together.ai to provide intelligent responses to your coding problems
+- **Code-Focused**: Optimized for discussing and debugging code with syntax highlighting
+- **Conversation Management**: Create, edit, save, and switch between multiple debugging sessions
+- **Export/Import**: Save your conversations for future reference or sharing
+- **Responsive Design**: Works on desktop and mobile devices
+- **Dark/Light Mode**: Choose your preferred theme
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a5db48ec-bb54-4c2f-ba39-e26a64c37363) and start prompting.
+## Technologies
 
-Changes made via Lovable will be committed automatically to this repo.
+This project is built with:
 
-**Use your preferred IDE**
+- [Vite](https://vitejs.dev/) - Fast build tool and development server
+- [React](https://reactjs.org/) - UI library
+- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [shadcn/ui](https://ui.shadcn.com/) - Reusable UI components
+- [Radix UI](https://www.radix-ui.com/) - Accessible UI primitives
+- [React Router](https://reactrouter.com/) - Client-side routing
+- [Google Generative AI](https://ai.google.dev/) - Gemini AI integration
+- [Together AI](https://together.ai/) - Alternative AI provider
+- [Prism.js](https://prismjs.com/) - Syntax highlighting for code blocks
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- npm or [Bun](https://bun.sh/)
+
+### Installation
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/yourusername/code-quacker.git
+   cd code-quacker
+   ```
+
+2. Install dependencies:
+   ```sh
+   npm install
+   # or with Bun
+   bun install
+   ```
+
+3. Start the development server:
+   ```sh
+   npm run dev
+   # or with Bun
+   bun run dev
+   ```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+### API Keys
+
+To use the AI features, you'll need to provide API keys:
+
+1. For Google Gemini: Get an API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. For OpenAI: Get an API key from [Together AI](https://www.together.ai/)
+
+Enter these keys in the settings dialog when prompted.
+
+## Usage
+
+1. **Set up your API key**: Enter your Google Gemini or OpenAI API key when prompted
+2. **Start a new conversation**: Click "New conversation" in the sidebar
+3. **Explain your problem**: Clearly describe the issue you're facing, including relevant code snippets
+4. **Engage in conversation**: Answer the duck's questions to explore your problem from different angles
+5. **Find your solution**: Through the process of explanation and discussion, you'll often discover the solution yourself!
+
+## Building for Production
+
+To build the app for production:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm run build
+# or with Bun
+bun run build
 ```
 
-**Edit a file directly in GitHub**
+The built files will be in the `dist` directory, ready to be deployed to your hosting provider of choice.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## License
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/a5db48ec-bb54-4c2f-ba39-e26a64c37363) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This project is open source and available under the [MIT License](LICENSE).
