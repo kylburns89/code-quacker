@@ -5,8 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useAiSettings } from '../contexts/AiSettingsContext';
-import { Bot, ArrowRight, Check, Mic } from 'lucide-react';
-import { Alert, AlertDescription } from './ui/alert';
+import { Bot, ArrowRight, Check } from 'lucide-react';
 
 const SettingsDialog: React.FC = () => {
   const {
@@ -30,10 +29,6 @@ const SettingsDialog: React.FC = () => {
   const [localTogetherModelName, setLocalTogetherModelName] = useState('');
   const [activeTab, setActiveTab] = useState<'gemini' | 'together'>(apiProvider);
 
-  // Check if voice input would be available with current settings
-  // Strictly only for gemini-2.0-flash-exp model
-  const isVoiceAvailable = activeTab === 'gemini' && localGeminiModelName === 'gemini-2.0-flash-exp';
-
   useEffect(() => {
     setLocalGeminiApiKey(geminiApiKey);
     setLocalGeminiModelName(geminiModelName);
@@ -49,7 +44,7 @@ const SettingsDialog: React.FC = () => {
     }
     
     if (localGeminiModelName !== geminiModelName) {
-      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-exp');
+      setGeminiModelName(localGeminiModelName || 'gemini-2.0-flash-lite');
     }
     
     if (localTogetherApiKey !== togetherApiKey) {
@@ -100,24 +95,14 @@ const SettingsDialog: React.FC = () => {
               />
               <Input
                 id="geminiModelName"
-                placeholder="Model name (defaults to gemini-2.0-flash-exp)"
+                placeholder="Model name (defaults to gemini-2.0-flash-lite)"
                 value={localGeminiModelName}
                 onChange={(e) => setLocalGeminiModelName(e.target.value)}
                 className="w-full"
               />
-              
-              {isVoiceAvailable && (
-                <Alert className="bg-secondary">
-                  <Mic className="h-4 w-4 mr-2" />
-                  <AlertDescription>
-                    Voice input is available with the gemini-2.0-flash-exp model.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Default model: gemini-2.0-flash-exp. Use this model for voice input capability.
+                Invalid model names will default to gemini-2.0-flash-lite.
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://ai.google.dev/tutorials/setup', '_blank')} size="sm">
@@ -146,7 +131,7 @@ const SettingsDialog: React.FC = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Your API key is stored locally in your browser and never sent to our servers.
-                Default model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+                Default model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free
               </p>
               <div className="pt-2">
                 <Button variant="outline" onClick={() => window.open('https://api.together.xyz/settings/api-keys', '_blank')} size="sm">

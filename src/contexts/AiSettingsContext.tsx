@@ -20,7 +20,6 @@ interface AiSettingsContextType {
   showSettingsDialog: () => void;
   hideSettingsDialog: () => void;
   hasCurrentProviderApiKey: () => boolean;
-  isVoiceInputAvailable: () => boolean;
 }
 
 const AiSettingsContext = createContext<AiSettingsContextType | undefined>(undefined);
@@ -39,6 +38,7 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
   
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 
+  // Load API keys when the component mounts
   useEffect(() => {
     setGeminiApiKeyState(getGeminiApiKeyFromStorage() || '');
     setTogetherApiKeyState(getTogetherApiKeyFromStorage() || '');
@@ -72,11 +72,6 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
   const hasCurrentProviderApiKey = () => {
     return apiProvider === 'gemini' ? hasGeminiApiKey() : hasTogetherApiKey();
   };
-  
-  // Strictly check for gemini-2.0-flash-exp model for voice input
-  const isVoiceInputAvailable = () => {
-    return apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp' && hasGeminiApiKey();
-  };
 
   const showSettingsDialog = () => setIsSettingsDialogOpen(true);
   const hideSettingsDialog = () => setIsSettingsDialogOpen(false);
@@ -98,7 +93,6 @@ export const AiSettingsProvider = ({ children }: { children: ReactNode }) => {
         showSettingsDialog,
         hideSettingsDialog,
         hasCurrentProviderApiKey,
-        isVoiceInputAvailable,
       }}
     >
       {children}

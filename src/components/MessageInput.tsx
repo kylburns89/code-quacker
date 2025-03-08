@@ -1,10 +1,9 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { SendHorizonal, Lightbulb } from 'lucide-react';
-import { toast } from 'sonner';
-import VoiceInput from './VoiceInput';
-import { useAiSettings } from '../contexts/AiSettingsContext';
+import { toast } from '@/hooks/use-toast';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => Promise<void>;
@@ -28,10 +27,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [message, setMessage] = useState<string>('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showExamples, setShowExamples] = useState(false);
-  const { apiProvider, geminiModelName } = useAiSettings();
-
-  // Check if voice input is available - strictly for gemini-2.0-flash-exp only
-  const isVoiceAvailable = apiProvider === 'gemini' && geminiModelName === 'gemini-2.0-flash-exp';
 
   // Auto-resize textarea
   useEffect(() => {
@@ -53,8 +48,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
       setMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error("Failed to send message", {
-        description: error instanceof Error ? error.message : "An unknown error occurred"
+      toast({
+        title: "Failed to send message",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
       });
     }
   };
@@ -72,10 +69,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
-  };
-
-  const handleVoiceInput = (text: string) => {
-    setMessage(prev => prev + text);
   };
 
   return (
@@ -120,13 +113,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
             rows={1}
             disabled={isLoading}
           />
-          
-          {isVoiceAvailable && (
-            <VoiceInput 
-              onTextReceived={handleVoiceInput}
-              disabled={isLoading}
-            />
-          )}
           
           <Button
             type="submit"
