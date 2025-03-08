@@ -30,7 +30,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
             </div>
             <span className="text-xs italic text-accent-foreground -mt-1">
-              Let's quack the code together!
+              Let's <i>quack</i> the code together!
             </span>
           </Link>
           
