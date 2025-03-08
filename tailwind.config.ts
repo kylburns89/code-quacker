@@ -58,6 +58,10 @@ export default {
 					beak: '#F97316',
 					eye: '#1E293B',
 					shine: '#FFFFFF'
+				},
+				gray: {
+					700: '#374151',
+					200: '#E5E7EB',
 				}
 			},
 			borderRadius: {

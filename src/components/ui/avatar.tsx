@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
@@ -37,7 +38,9 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-full",
+      "bg-secondary text-secondary-foreground font-medium",
+      "dark:bg-gray-700 dark:text-gray-200",
       className
     )}
     {...props}

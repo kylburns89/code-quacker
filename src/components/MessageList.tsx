@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { Message } from '../contexts/ChatContext';
 import CodeBlock from './CodeBlock';
@@ -155,7 +156,9 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading }) => {
                   <Duck size="sm" animate={false} />
                 ) : (
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback className="bg-blue-600 dark:bg-blue-500 text-white">
+                      {message.role === 'user' ? 'U' : 'A'}
+                    </AvatarFallback>
                   </Avatar>
                 )}
               </div>
